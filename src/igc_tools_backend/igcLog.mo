@@ -92,6 +92,7 @@ module {
             };
         };
 
+        // switch according to height information
         public func getJSONCoordinate () : Text {
             if (heightGPS != 0) {
                 return getJSONCoordinate3D();
@@ -113,23 +114,26 @@ module {
             return jsonCoord; 
         };
 
-        // TODO switch to numeric
-        public func getTimestamp () : Text {
-            return timestamp;
+        public func getJSONPointFeature () : Text {
+            var jsonFeature : Text = "{\"type\": \"Feature\", \"geometry\": {\"type\": \"Point\", \"coordinates\":";
+            jsonFeature #= getJSONCoordinate2D();
+            jsonFeature #= "}, \"properties\":{\"timestamp\": \"" # timestamp # "\", \"gpsheight\": " # Float.toText(heightGPS) # "}}";
+            return jsonFeature;
         };
 
         parseTrackpoint(trackpointText);
     };
 
+    // The Track will be constructed empty - then added points and header elements
     public class Track () {
-        var track : List.List <Trackpoint> = List.nil<Trackpoint>();  
+        var track : List.List <Trackpoint> = List.nil<Trackpoint>(); 
+        public var headers : HashMap.HashMap<Text,Text> = HashMap.HashMap<Text,Text>(10,Text.equal,Text.hash); 
         
         public func addTrackpoint (tp : Trackpoint)  {
-            Debug.print("add TP: " # tp.getTimestamp());
             track := List.push<Trackpoint>(tp,track);
         };
 
-        public func getJSONLineString() : Text {
+        private func getJSONLineString() : Text {
             var jsonLineString : Text = "{ \"type\" : \"LineString\", \"coordinates\" :[ ";
             let tpoints : Iter.Iter<Trackpoint> = List.toIter<Trackpoint> (track);
             var sizeHelper : Nat  = List.size(track);
@@ -142,13 +146,53 @@ module {
             };
             jsonLineString := jsonLineString # "]}";
             return jsonLineString;
-        }
+        };
+
+        // different representations - single LineFeature
+        public func getGeoJSONLineFeature() : Text {
+            var jsonFeature : Text = "{\"type\": \"Feature\", \"properties\": {";
+            let entries = headers.entries();
+            for (entry in entries) {
+                if (entry.1 != "") {
+                    jsonFeature #= "\"" # entry.0 # "\": \"" # entry.1 # "\"";
+                    jsonFeature #=",";
+                };
+            };
+            // remove the last ,
+            jsonFeature := Text.trimEnd(jsonFeature, #text ",");
+            jsonFeature #= "}, \"geometry\": ";
+            jsonFeature #= getJSONLineString();
+            jsonFeature #= "}";
+            return jsonFeature;
+        };
+
+        // different representations - Point Feature Collection
+        public func getGeoJSONPointCollection () : Text {
+            var jsonFeatureCollection : Text = "{\"type\": \"FeatureCollection\", \"features\": [";
+            let tpoints : Iter.Iter<Trackpoint> = List.toIter<Trackpoint> (track);
+            var sizeHelper : Nat  = List.size(track);
+            for (tp in tpoints) {
+                sizeHelper -=1;
+                jsonFeatureCollection #= tp.getJSONPointFeature ();
+                if (sizeHelper > 0) {
+                    jsonFeatureCollection := jsonFeatureCollection # ",";
+                };
+            };
+            jsonFeatureCollection #= "]}";
+            return jsonFeatureCollection;
+        };
+
+
+
+    };
+
+    public class TrackList () {
+
     };
 
     public class IGCLog (igcText :Text) {
         
         var unit_id :Text = "";
-        var headers : HashMap.HashMap<Text,Text> = HashMap.HashMap<Text,Text>(10,Text.equal,Text.hash);
         var track :Track = Track();      
         
         // parse the header elements
@@ -158,7 +202,7 @@ module {
             let ar_parts = Iter.toArray<Text>(it_parts);
             if(ar_parts.size() == 2) {
                 Debug.print("Header: " # ar_parts[0] # " - " # ar_parts[1]);
-                headers.put(ar_parts[0],ar_parts[1]);
+                track.headers.put(ar_parts[0],ar_parts[1]);
             } 
             else {
                 Debug.print("-");
@@ -199,30 +243,16 @@ module {
         // TODO Fix
         public func getFlarmId () : ?Text {
             //unit_id;
-            let values = headers.vals();
+            let values = track.headers.vals();
             for (val in values) {
                 Debug.print(val);
             };
-            return headers.get("HFPLTPILOTINCHARGE");
+            return track.headers.get("HFPLTPILOTINCHARGE");
         };
 
         public func getGeoJSON () : Text {
-            var jsonFeature : Text = "{\"type\": \"Feature\", \"properties\": {";
-            // TODO refactor header attributes as class
-            // TODO filter all empty attributes
-            let entries = headers.entries();
-            for (entry in entries) {
-                if (entry.1 != "") {
-                    jsonFeature #= "\"" # entry.0 # "\": \"" # entry.1 # "\"";
-                    jsonFeature #=",";
-                };
-            };
-            // remove the last ,
-            jsonFeature := Text.trimEnd(jsonFeature, #text ",");
-            jsonFeature #= "}, \"geometry\": ";
-            jsonFeature #= track.getJSONLineString();
-            jsonFeature #= "}";
-            return jsonFeature;
+            return track.getGeoJSONPointCollection();
+//            return track.getGeoJSONLineFeature();
         };
 
         parseText(igcText);
