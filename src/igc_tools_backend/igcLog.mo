@@ -48,7 +48,7 @@ module {
     };
 
     public class Trackpoint (trackpointText : Text) {
-        var timestamp : Text = "";
+        public var timestamp : Text = "";
         var latDeg : Float = 0;
         var lonDeg : Float = 0;
         var heightGPS : Float = 0;
@@ -128,7 +128,7 @@ module {
     public class Track () {
         var track : List.List <Trackpoint> = List.nil<Trackpoint>(); 
         public var headers : HashMap.HashMap<Text,Text> = HashMap.HashMap<Text,Text>(10,Text.equal,Text.hash); 
-        
+    
         public func addTrackpoint (tp : Trackpoint)  {
             track := List.push<Trackpoint>(tp,track);
         };
@@ -182,80 +182,91 @@ module {
             return jsonFeatureCollection;
         };
 
-
-
-    };
-
-    public class TrackList () {
-
-    };
-
-    public class IGCLog (igcText :Text) {
-        
-        var unit_id :Text = "";
-        var track :Track = Track();      
-        
-        // parse the header elements
-        func parseHeader (headerText :Text)  {
-            Debug.print("Parsing Header Text: " # headerText);
-            let it_parts : Iter.Iter<Text> = Text.split(headerText, #char ':');
-            let ar_parts = Iter.toArray<Text>(it_parts);
-            if(ar_parts.size() == 2) {
-                Debug.print("Header: " # ar_parts[0] # " - " # ar_parts[1]);
-                track.headers.put(ar_parts[0],ar_parts[1]);
-            } 
-            else {
-                Debug.print("-");
-            };            
+        public func getTrackId () : Text {
+            // get Unit ID
+            let unitID : Text = optionalText(headers.get("UnitId"));
+            let trackDate : Text = optionalText(headers.get("FDTEDATE"));
+            var trackId : Text = unitID # trackDate;
+            switch (List.last<Trackpoint>(track)){
+                case (null) {
+                    return trackId;
+                };
+                case (?id) {
+                    return trackId # id.timestamp;
+                };
+            };
         };
 
-        // Parser
-        func parseText (igcText :Text) {
-            let cr : Char = Char.fromNat32(0x000D);
-            let nl : Char = Char.fromNat32(0x000A);
-            let lines = Text.tokens(igcText, #char nl);
-            for (line in lines) {
-                // switch according to the first Letter of a line
-                let first :Char = Iter.toArray(Text.toIter(line))[0];
+        private func optionalText (a: ?Text) : Text {
+            switch (a) {
+                case (null) {
+                    return "";
+                };
+                case(?text) {
+                    return text;
+                };
+            };
+        };
+
+    };
+
+    public class TrackMap () {
+        // Store all Tracks in a HashMap with ID composed of UnitID, Date and Starttime
+        // Use additional index to filter planes etc.
+        var tracks : HashMap.HashMap<Text,Track> = HashMap.HashMap<Text,Track>(10,Text.equal,Text.hash); 
+
+        // add a track and return the Id
+        public func addTrack(track: Track) : Text {
+            tracks.put(track.getTrackId(),track);
+            return track.getTrackId();
+        };
+
+        // for testing the tracklist as Text
+        public func getTracklist () : Text {
+            let keyIter : Iter.Iter<Text> = tracks.keys();
+            var tracklist : Text = "- ";
+            for (key in keyIter) {
+                tracklist #= key # "- ";
+            };
+            return tracklist;
+        };
+    };
+    
+    public func parseIGCLog (igcText :Text) : Track {
+        var track :Track = Track();
+        let cr : Char = Char.fromNat32(0x000D);
+        let nl : Char = Char.fromNat32(0x000A);
+        let lines = Text.tokens(igcText, #char nl);
+        for (line in lines) {
+            // switch according to the first Letter of a line
+            let first :Char = Iter.toArray(Text.toIter(line))[0];
                 switch(first) {
                     case('A') {
-                        unit_id := Text.trimEnd(Text.trimStart(line, #char 'A'), #char cr);
-                        Debug.print("Unit Id: " # unit_id);
+                        track.headers.put("UnitId", Text.trimEnd(Text.trimStart(line, #char 'A'), #char cr));
+                        //track.unitId := Text.trimEnd(Text.trimStart(line, #char 'A'), #char cr);
                         };
                     case('H') {
                         Debug.print("Header: " # line);
                         let headerline :Text = Text.trimEnd(Text.trimStart(line, #char 'H'), #char cr);
-                        parseHeader(headerline);
+                        let it_parts : Iter.Iter<Text> = Text.split(headerline, #char ':');
+                        let ar_parts = Iter.toArray<Text>(it_parts);
+                        if(ar_parts.size() == 2) {
+                            track.headers.put(ar_parts[0],ar_parts[1]);
+                        };                       
                     };
                     case('B'){
                         Debug.print("Trackpoint: " # line);
-                        let dummy : Trackpoint = Trackpoint(line);
-                        track.addTrackpoint(dummy);
-                        Debug.print("JSON Coordinate: " # dummy.getJSONCoordinate());
+                        let tp : Trackpoint = Trackpoint(line);
+                        track.addTrackpoint(tp);
+                        Debug.print("JSON Coordinate: " # tp.getJSONCoordinate());
                     };
                     case(trap) {
-                        //Debug.print("Trap");
+                        Debug.print("Trap");
                     };
                 }  
             };
-        };
 
-        // TODO Fix
-        public func getFlarmId () : ?Text {
-            //unit_id;
-            let values = track.headers.vals();
-            for (val in values) {
-                Debug.print(val);
-            };
-            return track.headers.get("HFPLTPILOTINCHARGE");
-        };
-
-        public func getGeoJSON () : Text {
-            return track.getGeoJSONPointCollection();
-//            return track.getGeoJSONLineFeature();
-        };
-
-        parseText(igcText);
-        Debug.print("Finished Parsing");
+        return track;
     };
+
 };
