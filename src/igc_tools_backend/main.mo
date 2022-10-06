@@ -1,5 +1,8 @@
+import IGC "igcLog";
+
 actor {
-  public func greet(name : Text) : async Text {
-    return "Hello, " # name # "!";
+  public func uploadIGC (igcText : Text) : async Text {
+    let igc : IGC.IGCLog = IGC.IGCLog(igcText);
+    return igc.getGeoJSON();
   };
 };

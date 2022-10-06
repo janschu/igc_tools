@@ -3,22 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>igc_tools</title>
+    <title>trainingData</title>
     <base href="/" />
-    <link rel="icon" href="favicon.ico" />
-    <link type="text/css" rel="stylesheet" href="main.css" />
+    <link type="text/css" rel="stylesheet" href="upload.css" />
   </head>
   <body>
     <main>
-      <img src="logo2.svg" alt="DFINITY logo" />
       <br />
-      <br />
-      <form action="#">
-        <label for="name">Enter your name: &nbsp;</label>
-        <input id="name" alt="Name" type="text" />
-        <button type="submit">Click Me!</button>
+      <form id="uploadForm" action="#">
+        <label for="file">Choose an IGC File &nbsp;</label>
+        <input id="inputFile" alt="InputFile" type="file"/>
+        <button id="submitButton" type="submit">Submit</button>
       </form>
-      <section id="greeting"></section>
+      <section id="message"></section>
+      <hr/>
+      <section id="debug"></section>
     </main>
   </body>
 </html>

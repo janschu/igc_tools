@@ -1,19 +1,51 @@
 import { igc_tools_backend } from "../../declarations/igc_tools_backend";
 
-document.querySelector("form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const button = e.target.querySelector("button");
+// The relevant html elements
+const uploadForm = document.getElementById("uploadForm")
+const inputFileSelector = document.getElementById("inputFile");
+const submitButton = document.getElementById("submitButton");
+const messageBox = document.getElementById("message");
+const debugBox = document.getElementById("debug");
+var text = "";
 
-  const name = document.getElementById("name").value.toString();
+// Handler on file input box 
+// Reading a text file
+// write content into debug box
+function handleFiles() {
+  submitButton.setAttribute("disabled", true);
+  var file = this.files[0]; 
+  let reader = new FileReader();
+  text = reader;
+  reader.readAsText(file);
 
-  button.setAttribute("disabled", true);
+  // display the file text in debug box
+  reader.onload = function() {
+    text = reader.result;
+    debugBox.innerText = text;
+  };
+  // Error handling
+  reader.onerror = function() {
+    debugBox.innerText = reader.error;
+    console.log(reader.error);
+  };
+
+  submitButton.removeAttribute("disabled");
+}
+
+// Call the Main.mo
+async function uploadIGC (event) {
+  event.preventDefault();
+  
+  submitButton.setAttribute("disabled", true);
 
   // Interact with foo actor, calling the greet method
-  const greeting = await igc_tools_backend.greet(name);
+  const message = await igc_tools_backend.uploadIGC(text);
 
-  button.removeAttribute("disabled");
+  submitButton.removeAttribute("disabled");
 
-  document.getElementById("greeting").innerText = greeting;
+  messageBox.innerText = message;
 
-  return false;
-});
+}
+
+inputFileSelector.addEventListener("change", handleFiles, false);
+uploadForm.addEventListener("submit", uploadIGC);
