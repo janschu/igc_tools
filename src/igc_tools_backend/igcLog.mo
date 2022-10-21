@@ -222,13 +222,13 @@ module {
         };
 
         // for testing the tracklist as Text
-        public func getTracklist () : Text {
+        public func getTracklist () : [Text] {
             let keyIter : Iter.Iter<Text> = tracks.keys();
-            var tracklist : Text = "- ";
+            var tracklist : Buffer.Buffer<Text> = Buffer.Buffer<Text>(0);
             for (key in keyIter) {
-                tracklist #= key # "- ";
+                tracklist.add(key);
             };
-            return tracklist;
+            return tracklist.toArray();
         };
     };
     

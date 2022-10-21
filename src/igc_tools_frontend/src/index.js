@@ -6,6 +6,7 @@ const inputFileSelector = document.getElementById("inputFile");
 const submitButton = document.getElementById("submitButton");
 const messageBox = document.getElementById("message");
 const debugBox = document.getElementById("debug");
+const FileListElement = document.getElementById("fileId");
 var text = "";
 
 // Handler on file input box 
@@ -45,7 +46,22 @@ async function uploadIGC (event) {
 
   messageBox.innerText = message;
 
+  getTracklist(event);
+
 }
+
+// Call Main.mo getTracklist
+async function getTracklist(event) {
+  const tracklist = await igc_tools_backend.getTrackList();
+  const openTag = '<a href="#" class="list-group-item list-group-item-action">';
+  const closeTag ='</a>';
+  var content = "";
+  for (const track of tracklist){
+    content += openTag + track + closeTag;  
+  }
+  FileListElement.innerHTML = content;
+};
 
 inputFileSelector.addEventListener("change", handleFiles, false);
 uploadForm.addEventListener("submit", uploadIGC);
+window.addEventListener('load', getTracklist);

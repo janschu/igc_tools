@@ -35,3 +35,7 @@ button[type="submit"] {
 #greeting:empty {
     display: none;
 }
+
+div #FlightMap {
+    min-height: 500px;}
+     
