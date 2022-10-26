@@ -67,7 +67,6 @@ module {
             else {
                 latDeg := -latFloat;
             };
-            //Debug.print(debug_show(latDeg));
             let lon :Text = subText(trackpointText,15,23);
             let lonFloat :Float = Float.fromInt(textToNat(lon))/100000;
             let ew : Text = subText(trackpointText,23,24);
@@ -133,6 +132,34 @@ module {
             track := List.push<Trackpoint>(tp,track);
         };
 
+        // some relevant headers for direct access
+        public func getUnitID () : ?Text {
+            headers.get("UnitId")
+        };
+
+        public func getGliderID () : ?Text {
+            headers.get("FGIDGLIDERID");
+        };
+
+        public func getDate () : ?Text {
+            headers.get("FDTEDATE");
+        };
+
+        public func getStartTime () : ?Text {
+            switch (List.get<Trackpoint>(track,0)) {
+                case null { null };
+                case (?tp) {
+                    ?tp.timestamp;
+                };
+            };
+        };
+
+        // the id of the record derived from unit , date and time
+        // TODO refactor
+        public func getTrackId () : Text {
+            optionalText(getUnitID()) # optionalText(getDate()) # optionalText(getStartTime());
+        };
+
         private func getJSONLineString() : Text {
             var jsonLineString : Text = "{ \"type\" : \"LineString\", \"coordinates\" :[ ";
             let tpoints : Iter.Iter<Trackpoint> = List.toIter<Trackpoint> (track);
@@ -182,21 +209,6 @@ module {
             return jsonFeatureCollection;
         };
 
-        public func getTrackId () : Text {
-            // get Unit ID
-            let unitID : Text = optionalText(headers.get("UnitId"));
-            let trackDate : Text = optionalText(headers.get("FDTEDATE"));
-            var trackId : Text = unitID # trackDate;
-            switch (List.last<Trackpoint>(track)){
-                case (null) {
-                    return trackId;
-                };
-                case (?id) {
-                    return trackId # id.timestamp;
-                };
-            };
-        };
-
         private func optionalText (a: ?Text) : Text {
             switch (a) {
                 case (null) {
@@ -213,15 +225,15 @@ module {
     public class TrackMap () {
         // Store all Tracks in a HashMap with ID composed of UnitID, Date and Starttime
         // Use additional index to filter planes etc.
-        var tracks : HashMap.HashMap<Text,Track> = HashMap.HashMap<Text,Track>(10,Text.equal,Text.hash); 
+        public var tracks : HashMap.HashMap<Text,Track> = HashMap.HashMap<Text,Track>(10,Text.equal,Text.hash); 
 
         // add a track and return the Id
         public func addTrack(track: Track) : Text {
             tracks.put(track.getTrackId(),track);
             return track.getTrackId();
         };
-
-        // for testing the tracklist as Text
+ 
+        // for testing the tracklist as Text [] of TrackIds
         public func getTracklist () : [Text] {
             let keyIter : Iter.Iter<Text> = tracks.keys();
             var tracklist : Buffer.Buffer<Text> = Buffer.Buffer<Text>(0);
@@ -229,6 +241,11 @@ module {
                 tracklist.add(key);
             };
             return tracklist.toArray();
+        };
+
+        // simple wrapper
+        public func getTrackById (trackId : Text ) : ? Track {
+            tracks.get(trackId);
         };
     };
     

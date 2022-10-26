@@ -8,6 +8,8 @@ const messageBox = document.getElementById("message");
 const debugBox = document.getElementById("debug");
 const FileListElement = document.getElementById("fileId");
 var text = "";
+var flightMap;
+var flightOverlay;
 
 // Handler on file input box 
 // Reading a text file
@@ -50,18 +52,51 @@ async function uploadIGC (event) {
 
 }
 
+async function getTrackAsLine(event){
+  var source = event.target || event.srcElement;
+  // remove the old layer first
+  if (flightOverlay) {
+    flightMap.removeLayer(flightOverlay);
+  }
+  const geojson = await igc_tools_backend.getTrackLineGeoJSON(source.name);
+  messageBox.innerText = geojson; 
+  var geoJSONFeature = JSON.parse(geojson);
+  flightOverlay = L.geoJson(geoJSONFeature);
+  flightMap.addLayer(flightOverlay);
+  flightMap.fitBounds(flightOverlay.getBounds());  
+};
+
 // Call Main.mo getTracklist
 async function getTracklist(event) {
   const tracklist = await igc_tools_backend.getTrackList();
-  const openTag = '<a href="#" class="list-group-item list-group-item-action">';
-  const closeTag ='</a>';
-  var content = "";
+  FileListElement.replaceChildren();
   for (const track of tracklist){
-    content += openTag + track + closeTag;  
+    const button = document.createElement("button");
+    button.setAttribute("type", "button");
+    button.setAttribute("class", "list-group-item list-group-item-action rounded");
+    button.setAttribute("name", track.trackId);
+    const subheading = document.createElement("div");
+    subheading.setAttribute("class", "fw-bold");
+    const subheadingText = document.createTextNode(track.gliderId);
+    subheading.appendChild(subheadingText);
+    button.appendChild(subheading);
+    const buttonText = document.createTextNode(track.date + " " + track.time);
+    button.appendChild(buttonText);
+    button.addEventListener("click",getTrackAsLine);
+    FileListElement.appendChild(button);
   }
-  FileListElement.innerHTML = content;
 };
+
+function initMap(event){
+	flightMap = L.map('FlightMap');
+	flightMap.setView([53.04229, 8.6335013],10, );
+
+	var topPlusLayer = L.tileLayer.wms('http://sgx.geodatenzentrum.de/wms_topplus_open?', {format: 'image/png', layers: 'web', attribution: '&copy; <a href="http://www.bkg.bund.de">Bundesamt f&uuml;r Kartographie und Geod&auml;sie 2019</a>, <a href=" http://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf">Datenquellen</a>'});
+
+	topPlusLayer.addTo(flightMap);
+}
 
 inputFileSelector.addEventListener("change", handleFiles, false);
 uploadForm.addEventListener("submit", uploadIGC);
-window.addEventListener('load', getTracklist);
+document.addEventListener('DOMContentLoaded', initMap);
+document.addEventListener('DOMContentLoaded', getTracklist);
