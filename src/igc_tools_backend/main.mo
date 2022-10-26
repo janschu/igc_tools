@@ -41,7 +41,7 @@ actor {
     };
   };
 
-  public func getTrackList() : async [metadata] {
+  public query func getTrackList() : async [metadata] {
     let trackIter : Iter.Iter<Text> = trackmap.tracks.keys();
     var trackBuffer : Buffer.Buffer<metadata> = Buffer.Buffer<metadata>(0);
     for (trackId in trackIter) {
@@ -58,7 +58,7 @@ actor {
     return trackBuffer.toArray();
   };
 
-  public func getTrackLineGeoJSON (trackId : Text) : async Text {
+  public query func getTrackLineGeoJSON (trackId : Text) : async Text {
     switch (trackmap.getTrackById(trackId)) {
       case null {
         Debug.print("GeoJSON not found");
