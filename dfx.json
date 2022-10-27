@@ -4,6 +4,7 @@
       "main": "src/igc_tools_backend/main.mo",
       "type": "motoko"
     },
+
     "igc_tools_frontend": {
       "dependencies": [
         "igc_tools_backend"
@@ -16,6 +17,10 @@
         "dist/igc_tools_frontend/"
       ],
       "type": "assets"
+    },
+    "igc_tools_feature": {
+      "main": "src/igc_tools_feature/main.mo",
+      "type": "motoko"
     }
   },
   "defaults": {
