@@ -101,4 +101,57 @@ module {
             };
         };
     };
+
+    public func lb () : Text {
+        //let cr : Char = C.fromNat32(0x000D);
+        //let nl : Char = C.fromNat32(0x000A);
+        //C.toText(cr);
+        " "; 
+    };
+
+    public func optKvpJSON (key:Text, value: ?Text, comma:Bool) : Text {
+        switch (value) {
+            case (null) {
+                return "";
+            };
+            case (?val) {
+                return kvpJSON(key, val, comma);
+            };
+        };
+    };
+    
+    
+    public func kvpJSON (key:Text, value:Text, comma:Bool) : Text {
+        var text : Text = "\"" # key # "\": " # "\"" # value # "\"";
+        if (comma) {
+            text #= ",";
+        };
+        text #= lb();
+        return text; 
+    };
+
+    public func textArrayJSON (texts: [Text]) : Text {
+        var text : Text = "[";
+        let iterator : I.Iter<Text> = I.fromArray(texts);
+        I.iterate<Text>(iterator, func (i, _index) {
+            text #= "\"" # i # "\"";
+            if (_index+1 < texts.size()){
+                text #=",";
+            };
+        });
+        text #= "]";
+        return text;       
+    };
+
+    public func linkJSON (rel: Text, typ: Text, title: Text, href: Text) : Text {
+        // open
+        var text : Text = "{" # lb();
+        text #= kvpJSON("rel",rel,true);
+        text #= kvpJSON("type",typ,true);
+        text #= kvpJSON("title",title,true);
+        text #= kvpJSON("href",href,false);
+        // close 
+        text #= "}";
+        return text;
+    };
 };

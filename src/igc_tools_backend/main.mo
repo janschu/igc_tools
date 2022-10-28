@@ -8,6 +8,7 @@ import Principal "mo:base/Principal";
 import TR "igcTrack";
 import TM "igcTrackMap";
 import OR "ogcApiRoot";
+import OC "ogcApiCollections";
 
 actor { 
   // all HTTP handling from motoko mailing list
@@ -54,6 +55,13 @@ actor {
           body = Text.encodeUtf8(OR.getRootPage(trackmap,baseURL,#json));
           };
       };
+      case ("/collections") {
+        return {
+          status_code = 200;
+          headers = [];
+          body = Text.encodeUtf8(OC.getCollectionsPage(trackmap,baseURL,#json));
+          };
+      };
       case _ {
         Debug.print("null");
       };
@@ -75,7 +83,7 @@ actor {
 
 
 
-  // TODO Make stable
+  
   var trackmap : TM.TrackMap = TM.TrackMap();
 
   public func getOGCRootMetadata () : async TM.Metadata {
