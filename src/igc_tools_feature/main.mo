@@ -1,21 +1,15 @@
-import Text "mo:base/Text";
+import T "mo:base/Text";
+import I "mo:base/Iter";
+// local
+import OR "../igc_tools_backend/ogcApiRoot";
+// dapp
+import IGC "canister:igc_tools_backend";
+import TM "../igc_tools_backend/igcTrackMap";
 
-actor {
+actor {  
+  
+  // all HTTP handling from motoko mailing list
   type HeaderField = (Text, Text);
-
-  type Token = {};
-
-  type StreamingCallbackHttpResponse = {
-    body : Blob;
-    token : Token;
-  };
-
-  type StreamingStrategy = {
-    #Callback : {
-      callback : shared Token -> async StreamingCallbackHttpResponse;
-      token : Token;
-    };
-  };
 
   type HttpRequest = {
     method : Text;
@@ -28,24 +22,17 @@ actor {
     status_code : Nat16;
     headers : [HeaderField];
     body : Blob;
-    streaming_strategy : ?StreamingStrategy;
   };
 
+  // the faster 'query' does not work here
   public query func http_request(request : HttpRequest) : async HttpResponse {
+    let heads : I.Iter <HeaderField> = request.headers.vals();
+    var textBody : Text = "das nervt!";
     {
       status_code = 200;
       headers = [];
-      body = Text.encodeUtf8("Response to " # request.method # " request (query)");
-      streaming_strategy = null;
+      body = T.encodeUtf8(textBody);
     };
   };
 
-  public shared func http_request_update(request : HttpRequest) : async HttpResponse {
-    {
-      status_code = 200;
-      headers = [];
-      body = Text.encodeUtf8("Response to " # request.method # " request (update)");
-      streaming_strategy = null;
-    };
-  };
 };

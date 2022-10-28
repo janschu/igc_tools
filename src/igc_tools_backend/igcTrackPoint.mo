@@ -4,6 +4,7 @@ import Debug "mo:base/Debug";
 import H "helper";
 
 module {
+
     public class Trackpoint () {
         public var timestamp : Text = "";
         public var latDeg : Float = 0;

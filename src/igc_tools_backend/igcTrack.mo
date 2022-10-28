@@ -3,48 +3,88 @@ import HM "mo:base/HashMap";
 import T "mo:base/Text";
 import I "mo:base/Iter";
 import C "mo:base/Char";
+import Ti "mo:base/Time";
 import Debug "mo:base/Debug";
 
 // local
 import TP "igcTrackPoint";
+import H "helper";
 
 module {
 
     // The simple Metadata 
     // TODO maybe extend to 'real' ISO Metadata
-    public type metadata =  {
+    public type Metadata =  {
         trackId: Text;
+        timestamp : Ti.Time;
         gliderId : ?Text;
-        date : ?Text;
-        time : ?Text;
+        gliderPilot: ?Text;
+        gliderType: ?Text;
+        gliderClass: ?Text;
+        competitionId: ?Text;
+        start : ?Text;
+        land: ?Text;
     };
-
-
 
     // The Track will be constructed empty - then added points and header elements
     public class Track () {
-        var track : L.List <TP.Trackpoint> = L.nil<TP.Trackpoint>(); 
-        public var headers : HM.HashMap<Text,Text> = HM.HashMap<Text,Text>(10,T.equal,T.hash); 
+        var track : L.List <TP.Trackpoint> = L.nil<TP.Trackpoint>();  
+        public var headers : HM.HashMap<Text,Text> = HM.HashMap<Text,Text>(10,T.equal,T.hash);
+        let timestamp: Ti.Time = Ti.now();
     
         public func addTrackpoint (tp : TP.Trackpoint)  {
             track := L.push<TP.Trackpoint>(tp,track);
         };
 
         // some relevant headers for direct access
-        public func getUnitID () : ?Text {
+        // somehow grown TODO Clean
+        private func getUnitID () : ?Text {
             headers.get("UnitId")
         };
 
-        public func getGliderID () : ?Text {
+        private func getGliderID () : ?Text {
             headers.get("FGIDGLIDERID");
         };
 
-        public func getDate () : ?Text {
+        private func getDate () : ?Text {
             headers.get("FDTEDATE");
         };
 
-        public func getStartTime () : ?Text {
+        private func getPilot () : ?Text {
+            headers.get("FPLTPILOTINCHARGE");
+        };
+
+        private func getGliderType() : ?Text {
+            headers.get("FGTYGLIDERTYPE");
+        };
+
+        private func getGliderClass() : ?Text {
+            headers.get("FCCLCOMPETITIONCLASS");
+        };
+
+        private func getCompetionId() : ?Text {
+            headers.get("FCIDCOMPETITIONID");
+        };
+        
+        private func getStart() : H.DateTime {
+            return H.toDateTime(H.optionalText(getDate()) # H.optionalText(getStartTime()));
+        };
+
+        private func getLand() : H.DateTime {
+            return H.toDateTime(H.optionalText(getDate()) # H.optionalText(getLandTime()));
+        };
+
+        private func getLandTime () : ?Text {
             switch (L.get<TP.Trackpoint>(track,0)) {
+                case null { null };
+                case (?tp) {
+                    ?tp.timestamp;
+                };
+            };
+        };
+
+        private func getStartTime () : ?Text {
+            switch (L.last<TP.Trackpoint>(track)) {
                 case null { null };
                 case (?tp) {
                     ?tp.timestamp;
@@ -53,19 +93,23 @@ module {
         };
     
         // the id of the record derived from unit , date and time
-        // TODO design a better ID
+        // TODO change to fileId
         public func getTrackId () : Text {
-            optionalText(getUnitID()) # optionalText(getDate()) # optionalText(getStartTime());
+            H.optionalText(getUnitID()) # H.optionalText(getDate()) # H.optionalText(getStartTime());
         };
 
-        public func getMetadata () : metadata {
-            let md : metadata = {
+        public func getMetadata () : Metadata {
+            {
                 trackId = getTrackId();
+                timestamp = timestamp;
                 gliderId = getGliderID();
-                date = getDate();
-                time = getStartTime();
+                gliderPilot = getPilot();
+                gliderType = getGliderType();
+                gliderClass = getGliderClass();
+                competitionId = getCompetionId();
+                start = ? H.prettyDateTime(getStart());
+                land = ? H.prettyDateTime(getLand());
             };
-            md;
         };
 
 
@@ -117,18 +161,6 @@ module {
             jsonFeatureCollection #= "]}";
             return jsonFeatureCollection;
         };
-
-        private func optionalText (a: ?Text) : Text {
-            switch (a) {
-                case (null) {
-                    return "";
-                };
-                case(?text) {
-                    return text;
-                };
-            };
-        };
-
     };
 
     public func parseIGCTrack (igcText :Text) : Track {

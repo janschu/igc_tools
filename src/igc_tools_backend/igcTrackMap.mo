@@ -11,6 +11,11 @@ import TP "igcTrackPoint";
 
 module {
 
+    public type Metadata = {
+        title : Text;
+        description : Text;
+    };
+
     public class TrackMap () {
         // Store all Tracks in a HashMap with ID composed of UnitID, Date and Starttime
         // Use additional index to filter planes etc.
@@ -36,6 +41,14 @@ module {
         // simple wrapper
         public func getTrackById (trackId : Text ) : ? TR.Track {
             tracks.get(trackId);
+        };
+
+        // hardcoded Metadata
+        public func getMetadata() : Metadata {
+            return {
+                title = "Glider Flights";
+                description = "Some Recorded Flights";
+            };
         };
     };
 };

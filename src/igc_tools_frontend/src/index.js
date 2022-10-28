@@ -80,7 +80,7 @@ async function getTracklist(event) {
     const subheadingText = document.createTextNode(track.gliderId);
     subheading.appendChild(subheadingText);
     button.appendChild(subheading);
-    const buttonText = document.createTextNode(track.date + " " + track.time);
+    const buttonText = document.createTextNode(track.start + " - " + track.land);
     button.appendChild(buttonText);
     button.addEventListener("click",getTrackAsLine);
     FileListElement.appendChild(button);
