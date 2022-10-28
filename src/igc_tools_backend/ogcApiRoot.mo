@@ -17,64 +17,13 @@ module {
         return getRootHTML(map,baseURL);
     };
 
-    private func lb () : Text {
-        let cr : Char = C.fromNat32(0x000D);
-        //let nl : Char = C.fromNat32(0x000A);
-        C.toText(cr); 
-    };
 
-    private func optKvpJSON (key:Text, value: ?Text, comma:Bool) : Text {
-        switch (value) {
-            case (null) {
-                return "";
-            };
-            case (?val) {
-                return kvpJSON(key, val, comma);
-            };
-        };
-    };
-    
-    
-    private func kvpJSON (key:Text, value:Text, comma:Bool) : Text {
-        var text : Text = "\"" # key # "\": " # "\"" # value # "\"";
-        if (comma) {
-            text #= ",";
-        };
-        text #= lb();
-        return text; 
-    };
-
-    private func linkJSON (rel: Text, typ: Text, title: Text, href: Text) : Text {
-        // open
-        var text : Text = "{" # lb();
-        text #= kvpJSON("rel",rel,true);
-        text #= kvpJSON("type",typ,true);
-        text #= kvpJSON("title",title,true);
-        text #= kvpJSON("href",href,false);
-        // close 
-        text #= "}";
-        return text;
-    };
-
-    private func textArrayJSON (texts: [Text]) : Text {
-        var text : Text = "[";
-        let iterator : I.Iter<Text> = I.fromArray(texts);
-        I.iterate<Text>(iterator, func (i, _index) {
-            text #= "\"" # i # "\"";
-            if (_index+1 < texts.size()){
-                text #=",";
-            };
-        });
-        text #= "]";
-        return text;       
-    };
-
-    
+    // TODO Remove - Double with collection
     private func apiJSONTrack (track : TR.Track, baseURL: Text) : Text {
         let metadata : TR.Metadata = track.getMetadata();
         apiJSONText (
             ? ("Flight: " # H.optionalText(metadata.gliderId) # " " # H.optionalText(metadata.start)),
-            ? ("FlightLog: " # lb() # "Glider : " # H.optionalText(metadata.gliderId) # lb() # "Start: " # H.optionalText(metadata.start)),
+            ? ("FlightLog: " # H.lb() # "Glider : " # H.optionalText(metadata.gliderId) # H.lb() # "Start: " # H.optionalText(metadata.start)),
             ? metadata.trackId,
             ? (baseURL # "/" # metadata.trackId),
             ["Flight", "Track", H.optionalText(metadata.gliderId), H.optionalText(metadata.gliderPilot), H.optionalText(metadata.competitionId)],
@@ -84,12 +33,12 @@ module {
     
     private func apiJSONText (title: ?Text, description: ?Text, id: ?Text, landingPage: ?Text, tags: [Text], isDataset: Bool) : Text {
         // Open
-        var text : Text = "{" # lb();
-        text #= optKvpJSON("title",title,true);
-        text #= optKvpJSON("description",description,true);
-        text #= optKvpJSON("id",id,true);
-        text #= optKvpJSON("landingPageUri",landingPage,true);
-        text #= kvpJSON("tags",textArrayJSON(tags),true);
+        var text : Text = "{" # H.lb();
+        text #= H.optKvpJSON("title",title,true);
+        text #= H.optKvpJSON("description",description,true);
+        text #= H.optKvpJSON("id",id,true);
+        text #= H.optKvpJSON("landingPageUri",landingPage,true);
+        text #= "\"tags\":" # H.textArrayJSON(tags) # ",";
         if (isDataset) {
             text #= "\"isDataset\": true";
         }
@@ -103,21 +52,32 @@ module {
 
     private func getRootJSON (map: TM.TrackMap, baseURL: Text) : Text {
         // Open
-        var body : Text = "{" # lb();
+        var body : Text = "{" # H.lb();
         // Metadata
-        body #= kvpJSON("title", map.getMetadata().title, true);
-        body #= kvpJSON("description", map.getMetadata().description, true);
-        // Links
-        body #= "\"links\": " # "[" # lb();
-        body #=linkJSON("self", "application/json", "This document as JSON", baseURL#"?f=json");
-        body #=","#lb();
-        body #=linkJSON("alternate", "text/html", "This document as HTML", baseURL#"?f=html");
-        body #= "],"#lb();
+        body #= H.kvpJSON("title", map.getMetadata().title, true);
+        body #= H.kvpJSON("description", map.getMetadata().description, true);
+
         // catalog
-        body #= kvpJSON("catalogUri", baseURL,true);
+        body #= H.kvpJSON("catalogUri", baseURL,true);
+        // Links
+        body #= "\"links\": " # "[" # H.lb();
+        body #=H.linkJSON("self", "application/json", "This document as JSON", baseURL#"?f=json");
+        body #=","#H.lb();
+        body #=H.linkJSON("alternate", "text/html", "This document as HTML", baseURL#"?f=html");
+        body #=","#H.lb();
+        // dummies
+        body #=H.linkJSON("service-desc", "application/vnd.oai.openapi+json;version=3.0", "The OpenAPI definition as JSON", "https://api.weather.gc.ca/openapi");
+        body #=","#H.lb();
+        body #=H.linkJSON("service-doc", "text/html", "The OpenAPI definition as HTML", "https://api.weather.gc.ca/openapi?f=html");
+        body #=","#H.lb();
+        body #=H.linkJSON("conformance", "application/json",  "Conformance", "https://api.weather.gc.ca/conformance");
+        body #=","#H.lb();
+        // collections
+        body #=H.linkJSON("data", "application/json",  "Collections", baseURL#"/collections");
+        body #= "],"#H.lb();
         // apis
-        body #= "\"apis\": [" # lb();
-        // Loop all Tracks as single API Entriepoints
+        body #= "\"apis\": [" # H.lb();
+        // // Loop all Tracks as single API Entriepoints
 
         let iterTracks : I.Iter<TR.Track> = map.tracks.vals();
         I.iterate<TR.Track>(iterTracks, func(track, _index) {
@@ -125,10 +85,10 @@ module {
             if (_index+1 < map.tracks.size()){
                 body #= ",";
             };
-            body #= lb();
+            body #= H.lb();
         });
 
-        body #= "]" # lb();
+        body #= "]" # H.lb();
         // Close
         body #= "}";
 
