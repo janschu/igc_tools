@@ -5,6 +5,7 @@ import I "mo:base/Iter";
 import C "mo:base/Char";
 import Ti "mo:base/Time";
 import Debug "mo:base/Debug";
+import F "mo:base/Float";
 
 // local
 import TP "igcTrackPoint";
@@ -24,6 +25,7 @@ module {
         competitionId: ?Text;
         start : ?Text;
         land: ?Text;
+        bbox: H.BBox;
     };
 
     // The Track will be constructed empty - then added points and header elements
@@ -66,11 +68,11 @@ module {
             headers.get("FCIDCOMPETITIONID");
         };
         
-        private func getStart() : H.DateTime {
+        public func getStart() : H.DateTime {
             return H.toDateTime(H.optionalText(getDate()) # H.optionalText(getStartTime()));
         };
 
-        private func getLand() : H.DateTime {
+        public func getLand() : H.DateTime {
             return H.toDateTime(H.optionalText(getDate()) # H.optionalText(getLandTime()));
         };
 
@@ -91,6 +93,33 @@ module {
                 };
             };
         };
+
+        public func getBBox () : H.BBox {
+            var minLon : Float = 180;
+            var minLat : Float = 90;
+            var maxLon : Float = -180;
+            var maxLat : Float = -90;
+            let it : I.Iter<TP.Trackpoint> = L.toIter(track);
+            I.iterate <TP.Trackpoint> (it, func (tp, _index) {
+                if (tp.lonDeg < minLon) {
+                    minLon := tp.lonDeg;
+                };
+                if (tp.lonDeg > maxLon) {
+                    maxLon := tp.lonDeg;
+                };
+                if (tp.latDeg < minLat) {
+                    minLat := tp.latDeg;
+                };
+                if (tp.latDeg > maxLat) {
+                    maxLat := tp.latDeg;
+                };
+            });
+            return {minLat;
+                minLon;
+                maxLat;
+                maxLon;
+            };
+        };
     
         // the id of the record derived from unit , date and time
         // TODO change to fileId
@@ -107,8 +136,9 @@ module {
                 gliderType = getGliderType();
                 gliderClass = getGliderClass();
                 competitionId = getCompetionId();
-                start = ? H.prettyDateTime(getStart());
-                land = ? H.prettyDateTime(getLand());
+                start = ? H.prettyDateTime(? getStart());
+                land = ? H.prettyDateTime(? getLand());
+                bbox = getBBox();
             };
         };
 
@@ -146,6 +176,14 @@ module {
             return jsonFeature;
         };
 
+        // a collection with one feature
+        public func getGeoJSONLineCollection () : Text {
+            var jsonFeatureCollection : Text = "{\"type\": \"FeatureCollection\", \"features\": [";
+            jsonFeatureCollection #= getGeoJSONLineFeature();
+            jsonFeatureCollection #= "]}";
+            return jsonFeatureCollection;
+        };
+        
         // different representations - Point Feature Collection
         public func getGeoJSONPointCollection () : Text {
             var jsonFeatureCollection : Text = "{\"type\": \"FeatureCollection\", \"features\": [";
@@ -191,16 +229,16 @@ module {
                         //let tp : ?TP.Trackpoint = TP.parseTrackpoint(line);
                         switch (TP.parseTrackpoint(line)) {
                             case null {
-                                Debug.print("cannot read Trackpoint: " # line # "  - parsing error");
+                                // Debug.print("cannot read Trackpoint: " # line # "  - parsing error");
                             };
                             case (?(tp)) {
-                                Debug.print("Read Trackpoint " # line);
+                                // Debug.print("Read Trackpoint " # line);
                                 track.addTrackpoint(tp);
                             };
                         }
                     };
                     case(trap) {
-                        Debug.print("Something else " # line);
+                        // Debug.print("Something else " # line);
                     };
                 }  
             };

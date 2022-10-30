@@ -1,14 +1,16 @@
 import N32 "mo:base/Nat32";
-import I "mo:base/Iter";
 import C "mo:base/Char";
 import T "mo:base/Text";
 import N "mo:base/Nat";
+import I "mo:base/Iter";
 
 import Debug "mo:base/Debug";
 
 
 
 module {
+
+    // Text fromat helpers
     // Helper from https://forum.dfinity.org/t/subtext-substring-function-in-motoko/11838/2
     public func subText(value : Text, indexStart : Nat, indexEnd : Nat) : Text {
         if (indexStart == 0 and indexEnd >= value.size()) {
@@ -28,21 +30,18 @@ module {
         for (index in I.range(indexStart, indexEndValid - 1)) {
             result := result # C.toText(iter[index]);
         };
-
         result;
     };
 
     // Helper from https://forum.dfinity.org/t/motoko-convert-text-123-to-nat-or-int-123/7033/3
     public func textToNat( txt : Text) : Nat {
-        Debug.print("textToNat: " # txt);
-        assert(txt.size() > 0);
-        let chars = txt.chars();
-
+        assert (txt.size() > 0);
         var num : Nat = 0;
+        let chars = txt.chars();
         for (v in chars){
             let charToNum = N32.toNat(C.toNat32(v)-48);
             assert(charToNum >= 0 and charToNum <= 9);
-            num := num * 10 +  charToNum;          
+            num := num * 10 +  charToNum;         
         };
         num;
     };
@@ -67,7 +66,6 @@ module {
     };
 
     // just for IGC Times
-    // TODO all possible problems
     public func toDateTime (dateTime: Text): DateTime {
         return {
             day = textToNat(subText(dateTime,0,2));
@@ -79,18 +77,68 @@ module {
         };
     };
 
+    public func compare (dateTimeA: DateTime, dateTimeB : DateTime) : {#before; #equal; #after} {
+        if ((dateTimeA.year < dateTimeB.year)
+            or
+            (dateTimeA.year == dateTimeB.year
+            and dateTimeA.month < dateTimeB.month) 
+            or
+            (dateTimeA.year == dateTimeB.year
+            and dateTimeA.month == dateTimeB.month
+            and dateTimeA.day < dateTimeB.day) 
+            or
+            (dateTimeA.year == dateTimeB.year
+            and dateTimeA.month == dateTimeB.month
+            and dateTimeA.day == dateTimeB.day
+            and dateTimeA.hour < dateTimeB.hour)
+            or
+            (dateTimeA.year == dateTimeB.year
+            and dateTimeA.month == dateTimeB.month
+            and dateTimeA.day == dateTimeB.day
+            and dateTimeA.hour == dateTimeB.hour
+            and dateTimeA.minute < dateTimeB.minute) 
+            or
+            (dateTimeA.year == dateTimeB.year
+            and dateTimeA.month == dateTimeB.month
+            and dateTimeA.day == dateTimeB.day
+            and dateTimeA.hour == dateTimeB.hour
+            and dateTimeA.minute == dateTimeB.minute
+            and dateTimeA.sec < dateTimeB.sec)
+        ) {
+            return #before;
+            }; 
+        if (dateTimeA.day == dateTimeB.day
+        and dateTimeA.month == dateTimeB.month
+        and dateTimeA.year == dateTimeB.year
+        and dateTimeA.hour == dateTimeB.hour
+        and dateTimeA.minute == dateTimeB.minute
+        and dateTimeA.sec == dateTimeB.sec
+        ) {
+            return #equal;
+            }
+        else {return #after;};
+    };
+
     public func prettyTime (dt: DateTime) : Text {
         return natTwoDigits(dt.hour)# ":" # natTwoDigits(dt.minute) # ":" # natTwoDigits(dt.sec);
     };
 
     public func prettyDate(dt: DateTime) : Text {
-        return natTwoDigits(dt.year)# "/" # natTwoDigits(dt.month) # "/" # natTwoDigits(dt.day);
+        return "20"#natTwoDigits(dt.year)# "-" # natTwoDigits(dt.month) # "-" # natTwoDigits(dt.day); // TODO remove 20
     };
 
-    public func prettyDateTime(dt: DateTime) : Text {
-        return prettyDate(dt) # "-" # prettyTime(dt);
+    public func prettyDateTime(dt: ?DateTime) : Text {
+        switch (dt){
+            case null {
+                "null";
+            };
+            case (? d) {
+                return prettyDate(d) # "T" # prettyTime(d) # "Z";
+            };
+        };
     };
 
+    // return empty String if null
     public func optionalText (a: ?Text) : Text {
         switch (a) {
             case (null) {
@@ -102,56 +150,23 @@ module {
         };
     };
 
-    public func lb () : Text {
-        //let cr : Char = C.fromNat32(0x000D);
-        //let nl : Char = C.fromNat32(0x000A);
-        //C.toText(cr);
-        " "; 
+    // which representation used 
+    public type Representation = {#json; #html};
+
+    // BBox
+    public type BBox = {
+        minLat: Float;
+        minLon: Float;
+        maxLat: Float;
+        maxLon: Float;
     };
 
-    public func optKvpJSON (key:Text, value: ?Text, comma:Bool) : Text {
-        switch (value) {
-            case (null) {
-                return "";
-            };
-            case (?val) {
-                return kvpJSON(key, val, comma);
-            };
-        };
-    };
-    
-    
-    public func kvpJSON (key:Text, value:Text, comma:Bool) : Text {
-        var text : Text = "\"" # key # "\": " # "\"" # value # "\"";
-        if (comma) {
-            text #= ",";
-        };
-        text #= lb();
-        return text; 
-    };
-
-    public func textArrayJSON (texts: [Text]) : Text {
-        var text : Text = "[";
-        let iterator : I.Iter<Text> = I.fromArray(texts);
-        I.iterate<Text>(iterator, func (i, _index) {
-            text #= "\"" # i # "\"";
-            if (_index+1 < texts.size()){
-                text #=",";
-            };
-        });
-        text #= "]";
-        return text;       
-    };
-
-    public func linkJSON (rel: Text, typ: Text, title: Text, href: Text) : Text {
-        // open
-        var text : Text = "{" # lb();
-        text #= kvpJSON("rel",rel,true);
-        text #= kvpJSON("type",typ,true);
-        text #= kvpJSON("title",title,true);
-        text #= kvpJSON("href",href,false);
-        // close 
-        text #= "}";
-        return text;
-    };
+    //extend the BBox 
+    public func extendBBox (boxA: BBox, boxB: BBox) : BBox {
+        let minLa = if (boxA.minLat < boxB.minLat) {boxA.minLat} else {boxB.minLat};
+        let maxLa = if (boxA.maxLat > boxB.maxLat) {boxA.maxLat} else {boxB.maxLat};
+        let minLo = if (boxA.minLon < boxB.minLon) {boxA.minLon} else {boxB.minLon};
+        let maxLo = if (boxA.maxLon > boxB.maxLon) {boxA.maxLon} else {boxB.maxLon};
+        return {minLat = minLa; maxLat = maxLa; minLon = minLo; maxLon = maxLo};
+    };  
 };

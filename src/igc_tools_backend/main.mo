@@ -9,6 +9,7 @@ import TR "igcTrack";
 import TM "igcTrackMap";
 import OR "ogcApiRoot";
 import OC "ogcApiCollections";
+import OCF "ogcApiConformance";
 
 actor { 
   // all HTTP handling from motoko mailing list
@@ -31,28 +32,113 @@ actor {
     body : Blob;
   };
  
-  private func getURLParts (url: Text) : (Text, ?Text) {
-    let urlparts : Iter.Iter <Text> = Text.split(url, #char '?');
-    switch (urlparts.next()) {
-      case (? text) {
-        return (text,urlparts.next());
-      };
-      case null {
-        return (url, urlparts.next());
-      };
+  // private func splitURLParams (url: Text) : (Text, ?Text) {
+  //   let urlparts : Iter.Iter <Text> = Text.split(url, #char '?');
+  //   switch (urlparts.next()) {
+  //     case (? text) {
+  //       return (text,urlparts.next());
+  //     };
+  //     case null {
+  //       return (url, urlparts.next());
+  //     };
+  //   };
+  // };
+
+  private type URLPattern = {
+    path : [Text];
+    queryParams : [(Text,Text)];
+    format : {#html;#json;#undefined};
+  };
+
+  private func parseURL (request : HttpRequest) : URLPattern {
+    // split path and queryParams -> result shall be of size 1 or 2
+    let urlparts : [Text] = Iter.toArray(Text.tokens(request.url, #char '?'));
+    // split path components
+    let pathComponents : [Text] = Iter.toArray(Text.tokens(urlparts[0], #char '/'));
+    // split query elements
+    var kvpBuffer : Buffer.Buffer <(Text,Text)> = Buffer.Buffer <(Text,Text)> (0);
+    if (urlparts.size() > 1) {
+      let queryIter : Iter.Iter<Text> = Text.split(urlparts[1], #char '&');
+      // split KVP 
+      Iter.iterate<Text>(queryIter, func (item, _index) {
+        let kvp: [Text] = Iter.toArray(Text.split(item, #char '='));
+        kvpBuffer.add((kvp[0],kvp[1]));
+      });
+    };
+    // TODO Check the requested format
+    // currently fixed to json
+    return {
+      path = pathComponents;
+      queryParams = kvpBuffer.toArray();
+      format = #json;
     };
   };
 
+  // Endpoints:
+  // / : Landing Page - the service and the endpoint list
+  // /conformance: static conformance page
+  // /api: desribing the endpoints and the document structure
+  // /collections: List of all collections/layers
+  // /collections/{id}: Information on the collection 
+  // /collections/{id}/items: Feature Collection
+  // /collections/{id}/items/{featureid}: A single feature
+  //
+  // TODO: Filter BBOX, DateTime
   public query func http_request(request : HttpRequest) : async HttpResponse {  
-    // split according to REST pattern
-    let path : Text = getURLParts(request.url).0;
-    Debug.print("Path: '"#path#"'");
-    switch (path) {
-      case ("/") {
-        return {
+    let urlPattern : URLPattern = parseURL(request);
+    Debug.print(debug_show(urlPattern));
+    // test the possible combinations
+    // Root
+    if (urlPattern.path.size() == 0) {
+      return {
           status_code = 200;
           headers = [];
           body = Text.encodeUtf8(OR.getRootPage(trackmap,baseURL,#json));
+          };
+    };
+    // Conformance
+    if (urlPattern.path.size() == 1 and urlPattern.path[0] == "conformance") {
+      return {
+          status_code = 200;
+          headers = [];
+          body = Text.encodeUtf8(OCF.getConformancePage(#json));
+          };
+    };   
+    // Collections
+    if (urlPattern.path.size() == 1 and urlPattern.path[0] == "collections") {
+      return {
+          status_code = 200;
+          headers = [];
+          body = Text.encodeUtf8(OC.getCollectionsPage(trackmap,baseURL,#json));
+          };
+    };
+    // Items
+      if (urlPattern.path.size() == 3 and urlPattern.path[0] == "collections" and urlPattern.path[2] == "items") {
+        switch (trackmap.getTrackById(urlPattern.path[1])) {
+          case (?(track)) {
+            return {
+              status_code = 200;
+              headers = [];
+              body = Text.encodeUtf8(track.getGeoJSONPointCollection());
+            };
+          };
+          case _ {
+            return {
+              status_code = 404;
+              headers = [];
+              body = Text.encodeUtf8("No track found");
+           };
+          };
+        };      
+    };
+
+
+    switch ("/error") {
+      case ("/") {
+        return {
+          status_code = 404;
+          headers = [];
+          body = Text.encodeUtf8("404 Errorpage");
           };
       };
       case ("/collections") {
@@ -62,19 +148,16 @@ actor {
           body = Text.encodeUtf8(OC.getCollectionsPage(trackmap,baseURL,#json));
           };
       };
+      // todo check the .../items
       case _ {
-        Debug.print("null");
+          return {
+          status_code = 404;
+          headers = [];
+          body = Text.encodeUtf8("404 Errorpage");
+          };
       };
     };
     ///
-    if (path =="/") { 
-  
-    };
-    return {
-        status_code = 404;
-        headers = [];
-        body = Text.encodeUtf8("Not found");
-      }; 
   };
 
   ///////
