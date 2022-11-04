@@ -9,6 +9,7 @@ import TR "igcTrack";
 import TM "igcTrackMap";
 import OR "ogcApiRoot";
 import OC "ogcApiCollections";
+import OCS "ogcApiCollectionsSingle";
 import OCF "ogcApiConformance";
 
 actor { 
@@ -112,8 +113,43 @@ actor {
           body = Text.encodeUtf8(OC.getCollectionsPage(trackmap,baseURL,#json));
           };
     };
+    // Single Collections
+    if (urlPattern.path.size() == 2 and urlPattern.path[0] == "collections") {
+      // Check the overall Feature Collection - hardcoded pattern
+        if (urlPattern.path[1] == "FC") {
+          return {
+            status_code = 200;
+            headers = [];
+            body = Text.encodeUtf8(OCS.getCollectionsSingleMap (trackmap,baseURL,#json));
+          };  
+        };
+        switch (trackmap.getTrackById(urlPattern.path[1])) {
+          case (?(track)) {
+            return {
+              status_code = 200;
+              headers = [];
+              body = Text.encodeUtf8(OCS.getCollectionsSingleTrack(track,baseURL,#json));
+            };
+          };
+          case _ {
+            return {
+              status_code = 404;
+              headers = [];
+              body = Text.encodeUtf8("No track found");
+           };
+          };
+        }
+    };    
     // Items
       if (urlPattern.path.size() == 3 and urlPattern.path[0] == "collections" and urlPattern.path[2] == "items") {
+        // Check the overall Feature Collection - hardcoded pattern
+        if (urlPattern.path[1] == "FC") {
+          return {
+            status_code = 200;
+            headers = [];
+            body = Text.encodeUtf8(trackmap.getGeoJSONLineCollection ());
+          };  
+        };
         switch (trackmap.getTrackById(urlPattern.path[1])) {
           case (?(track)) {
             return {

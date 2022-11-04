@@ -97,21 +97,21 @@ module {
         body #=JH.linkJSON("service-doc", "text/html", "The OpenAPI definition as HTML", "https://api.weather.gc.ca/openapi?f=html");
         body #=","#JH.lb();
         // collections
-        body #=JH.linkJSON("data", "application/json",  "Collections", baseURL#"/collections");
+        body #=JH.linkJSON("data", "application/json",  "Collections", baseURL#"/collections?f=json");
         body #= "]"#JH.lb();
-        // apis
-        // body #= "\"apis\": [" # JH.lb();
-        // // // Loop all Tracks as single API Entriepoints
-        // let iterTracks : I.Iter<TR.Track> = map.tracks.vals();
-        // I.iterate<TR.Track>(iterTracks, func(track, _index) {
-        //     body #= apiJSONTrack(track,baseURL);
-        //     if (_index+1 < map.tracks.size()){
-        //         body #= ",";
-        //     };
-        //     body #= JH.lb();
-        // });
+        // collections
+        body #= ",\"apis\": [" # JH.lb();
+        // // Loop all Tracks as single API Entriepoints
+        let iterTracks : I.Iter<TR.Track> = map.tracks.vals();
+        I.iterate<TR.Track>(iterTracks, func(track, _index) {
+            body #= apiJSONTrack(track,baseURL);
+            if (_index+1 < map.tracks.size()){
+                body #= ",";
+            };
+            body #= JH.lb();
+        });
 
-        // body #= "]" # JH.lb();
+        body #= "]" # JH.lb();
         // Close
         body #= "}";
 

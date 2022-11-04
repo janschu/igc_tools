@@ -69,7 +69,6 @@ module {
     // used for pretty print during dev
     public func lb () : Text {
         // let cr : Char = C.fromNat32(0x000D);
-        //let nl : Char = C.fromNat32(0x000A);
         // C.toText(cr);
         " "; 
     };

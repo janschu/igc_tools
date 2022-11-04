@@ -73,6 +73,8 @@ module {
         body #= apiJSONText(? mapMetadata.title, ? mapMetadata.description, ? mapMetadata.id, baseURL # "/collections/" # mapMetadata.id, 
                             ["Collection", "Glider", "Flights"], mapMetadata.bbox, 
                             ? H.prettyDateTime(mapMetadata.start), ? H.prettyDateTime(mapMetadata.land), true);
+        
+        body #= ","# JH.lb();
 
         // each Track as Point FC
         // each Track as Line FC
@@ -96,7 +98,7 @@ module {
         "HTML not implemented";
     };
 
-    private func apiJSONTrack (track : TR.Track, baseURL: Text) : Text {
+    public func apiJSONTrack (track : TR.Track, baseURL: Text) : Text {
         let metadata : TR.Metadata = track.getMetadata();
         apiJSONText (
             ? ("Flight: " # H.optionalText(metadata.gliderId) # " " # H.optionalText(metadata.start)),
@@ -111,7 +113,7 @@ module {
         );
     };
     
-    private func apiJSONText (title: ?Text, description: ?Text, id: ?Text, currentURL: Text, tags: [Text], boundingBox: H.BBox, start: ?Text, end: ?Text, isDataset: Bool) : Text {
+    public func apiJSONText (title: ?Text, description: ?Text, id: ?Text, currentURL: Text, tags: [Text], boundingBox: H.BBox, start: ?Text, end: ?Text, isDataset: Bool) : Text {
         // Open
         var text : Text = "{" # JH.lb();
         text #= JH.optKvpJSON("title",title,true);
@@ -124,6 +126,8 @@ module {
         else {
             text #= "\"isDataset\": true";
         };
+        text #= "," # JH.lb();
+        text #= "\"type\": \"FeatureCollection\"";  
         text #= "," # JH.lb();
         text #= "\"extent\": {" #JH.lb();
         text #= JH.spatialExtentJson(boundingBox);
