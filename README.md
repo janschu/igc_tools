@@ -15,11 +15,15 @@ On a later stage, the specific functionalities of the IC shall be used to test t
 - ...
 
 ## Current implementation
-A simple test-setup takes spatial data in the [IGC GNSS Tracks](https://en.wikipedia.org/wiki/IGC_(file_format)) format and provide an [OGC API Features](https://www.ogc.org/standards/ogcapi-features) to those data. 
+A simple test-setup takes spatial data in the [IGC GNSS Tracks](https://en.wikipedia.org/wiki/IGC_(file_format)) format and provide an [OGC API Features](https://www.ogc.org/standards/ogcapi-features) to those data.
+
 Testpage to view and upload IGC Files: [https://m2ifq-raaaa-aaaah-abtla-cai.ic0.app](https://m2ifq-raaaa-aaaah-abtla-cai.ic0.app)
+
 Langing Page to OGC Feature API (incomplete): [https://mtlom-hiaaa-aaaah-abtkq-cai.raw.ic0.app/](https://mtlom-hiaaa-aaaah-abtkq-cai.raw.ic0.app/)
 
-## Screenshots
+## Screenshots & Presentation
+- [Video with 10 min Presentation](https://nextcloud.frankfurt-university.de/s/yDq3FkMoJnLaQaj)
+
 - The page to upload the flight tracks
 ![grafik](https://user-images.githubusercontent.com/17230001/201938697-6bfe0bdf-7ef7-468f-8927-c0f3df99c9e9.png)
 
