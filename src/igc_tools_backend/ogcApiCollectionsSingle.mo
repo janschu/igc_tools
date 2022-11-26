@@ -2,6 +2,7 @@ import TM "igcTrackMap";
 import TR "igcTrack";
 import OC "ogcApiCollections";
 import H "helper";
+import DT "dateTime";
 
 
 module {
@@ -20,7 +21,7 @@ module {
 
         OC.apiJSONText(? mapMetadata.title, ? mapMetadata.description, ? mapMetadata.id, baseURL # "/collections/" # mapMetadata.id, 
                             ["Collection", "Glider", "Flights"], mapMetadata.bbox, 
-                            ? H.prettyDateTime(mapMetadata.start), ? H.prettyDateTime(mapMetadata.land), true);
+                            ? DT.prettyDateTime(mapMetadata.start), ? DT.prettyDateTime(mapMetadata.land), true);
     };
 
     private func getCollectionsSingleMapHTML (map: TM.TrackMap, baseURL: Text) : Text {

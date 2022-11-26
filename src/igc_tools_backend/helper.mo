@@ -3,12 +3,19 @@ import C "mo:base/Char";
 import T "mo:base/Text";
 import N "mo:base/Nat";
 import I "mo:base/Iter";
-
+import R "mo:base/Result";
 import Debug "mo:base/Debug";
 
 
 
+
 module {
+
+    // Errors
+    public type HelperError = {#parseError; #numberToBig};
+
+    // which representation used 
+    public type Representation = {#json; #html};
 
     // Text fromat helpers
     // Helper from https://forum.dfinity.org/t/subtext-substring-function-in-motoko/11838/2
@@ -34,108 +41,35 @@ module {
     };
 
     // Helper from https://forum.dfinity.org/t/motoko-convert-text-123-to-nat-or-int-123/7033/3
-    public func textToNat( txt : Text) : Nat {
-        assert (txt.size() > 0);
+    public func textToNat( txt : Text) : R.Result <Nat, HelperError> {
+        if (txt.size() <= 0) {
+            Debug.print("helper textToNat: Text Size Error" # debug_show(txt.size()));
+            return #err(#parseError);
+        };
         var num : Nat = 0;
         let chars = txt.chars();
         for (v in chars){
             let charToNum = N32.toNat(C.toNat32(v)-48);
-            assert(charToNum >= 0 and charToNum <= 9);
+            if (charToNum < 0 or charToNum > 9) {
+                Debug.print("helper textToNat: Number Error" # debug_show(v) # " Code: " # debug_show(charToNum));
+                return #err(#parseError);
+            };
             num := num * 10 +  charToNum;         
         };
-        num;
+        #ok(num);
     };
 
-    public func natTwoDigits (nat: Nat) : Text {
+    // TODO: Handle big numbers
+    public func natTwoDigits (nat: Nat) : R.Result <Text, HelperError> {
         var text : Text = "";
+        if (nat > 99) {
+            return #err(#numberToBig);
+        };
         if (nat < 10) {
              text #= "0";
         };
         text #= N.toText(nat);
-        return text;
-    };
-
-    // Date and Time (Zero)
-    public type DateTime = {
-        year : Nat;
-        month : Nat;
-        day : Nat;
-        hour : Nat;
-        minute: Nat;
-        sec: Nat;
-    };
-
-    // just for IGC Times
-    public func toDateTime (dateTime: Text): DateTime {
-        return {
-            day = textToNat(subText(dateTime,0,2));
-            month = textToNat(subText(dateTime,2,4));
-            year = textToNat(subText(dateTime,4,6));
-            hour = textToNat(subText(dateTime,6,8));
-            minute = textToNat(subText(dateTime,8,10));
-            sec = textToNat(subText(dateTime,10,12));
-        };
-    };
-
-    public func compare (dateTimeA: DateTime, dateTimeB : DateTime) : {#before; #equal; #after} {
-        if ((dateTimeA.year < dateTimeB.year)
-            or
-            (dateTimeA.year == dateTimeB.year
-            and dateTimeA.month < dateTimeB.month) 
-            or
-            (dateTimeA.year == dateTimeB.year
-            and dateTimeA.month == dateTimeB.month
-            and dateTimeA.day < dateTimeB.day) 
-            or
-            (dateTimeA.year == dateTimeB.year
-            and dateTimeA.month == dateTimeB.month
-            and dateTimeA.day == dateTimeB.day
-            and dateTimeA.hour < dateTimeB.hour)
-            or
-            (dateTimeA.year == dateTimeB.year
-            and dateTimeA.month == dateTimeB.month
-            and dateTimeA.day == dateTimeB.day
-            and dateTimeA.hour == dateTimeB.hour
-            and dateTimeA.minute < dateTimeB.minute) 
-            or
-            (dateTimeA.year == dateTimeB.year
-            and dateTimeA.month == dateTimeB.month
-            and dateTimeA.day == dateTimeB.day
-            and dateTimeA.hour == dateTimeB.hour
-            and dateTimeA.minute == dateTimeB.minute
-            and dateTimeA.sec < dateTimeB.sec)
-        ) {
-            return #before;
-            }; 
-        if (dateTimeA.day == dateTimeB.day
-        and dateTimeA.month == dateTimeB.month
-        and dateTimeA.year == dateTimeB.year
-        and dateTimeA.hour == dateTimeB.hour
-        and dateTimeA.minute == dateTimeB.minute
-        and dateTimeA.sec == dateTimeB.sec
-        ) {
-            return #equal;
-            }
-        else {return #after;};
-    };
-
-    public func prettyTime (dt: DateTime) : Text {
-        return natTwoDigits(dt.hour)# ":" # natTwoDigits(dt.minute) # ":" # natTwoDigits(dt.sec);
-    };
-
-    public func prettyDate(dt: DateTime) : Text {
-        return "20"#natTwoDigits(dt.year)# "-" # natTwoDigits(dt.month) # "-" # natTwoDigits(dt.day); // TODO remove 20
-    };
-
-    public func prettyDateTime(dt: ?DateTime) : Text {
-        switch (dt){
-            case null {
-                "null";
-            };
-            case (? d) {
-                return prettyDate(d) # "T" # prettyTime(d) # "Z";
-            };
-        };
+        return #ok(text);
     };
 
     // return empty String if null
@@ -149,9 +83,6 @@ module {
             };
         };
     };
-
-    // which representation used 
-    public type Representation = {#json; #html};
 
     // BBox
     public type BBox = {

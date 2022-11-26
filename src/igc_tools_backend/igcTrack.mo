@@ -6,10 +6,12 @@ import C "mo:base/Char";
 import Ti "mo:base/Time";
 import Debug "mo:base/Debug";
 import F "mo:base/Float";
+import R "mo:base/Result";
 
 // local
 import TP "igcTrackPoint";
 import H "helper";
+import DT "dateTime";
 
 module {
 
@@ -68,23 +70,67 @@ module {
             headers.get("FCIDCOMPETITIONID");
         };
         
-        public func getStart() : H.DateTime {
-            return H.toDateTime(H.optionalText(getDate()) # H.optionalText(getStartTime()));
+        public func getStart() : R.Result <DT.DateTime, DT.DateTimeError> {
+            Debug.print("Enter igcTrack getStart");
+            switch (getDate()) {
+                case (null) {
+                    Debug.print("get Date Null");
+                };
+                case (? startText) {
+                    Debug.print("get Date " # startText);
+                };
+            };
+            switch (getStartTime()) {
+                case (null) {
+                    Debug.print("get Start Null");
+                };
+                case (? startText) {
+                    Debug.print("get Start " # startText);
+                };
+            };
+            let dateTimeText : Text = H.optionalText(getDate()) # H.optionalText(getStartTime());
+            Debug.print ("DateTime start: " # dateTimeText);
+            DT.igcToDateTime(dateTimeText);
         };
 
-        public func getLand() : H.DateTime {
-            return H.toDateTime(H.optionalText(getDate()) # H.optionalText(getLandTime()));
+        public func getLand() : R.Result <DT.DateTime, DT.DateTimeError> {
+            Debug.print("Enter igcTrack GetLand");
+            switch (getDate()) {
+                case (null) {
+                    Debug.print("get Date Null");
+                };
+                case (? startText) {
+                    Debug.print("get Date " # startText);
+                };
+            };
+            switch (getStartTime()) {
+                case (null) {
+                    Debug.print("get Land Null");
+                };
+                case (? startText) {
+                    Debug.print("get Land " # startText);
+                };
+            };
+            let dateTimeText : Text = H.optionalText(getDate()) # H.optionalText(getLandTime());
+            Debug.print ("DateTime start: " # dateTimeText);
+            DT.igcToDateTime(dateTimeText);
         };
 
+        // null if no trackpoints
         private func getLandTime () : ?Text {
+            Debug.print("Enter igcTrack getLandTime");
             switch (L.get<TP.Trackpoint>(track,0)) {
-                case null { null };
+                case null { 
+                    Debug.print("No Trackpoint 0 found");
+                    null;
+                 };
                 case (?tp) {
                     ?tp.timestamp;
                 };
             };
         };
 
+        // null if no trackpoints
         private func getStartTime () : ?Text {
             switch (L.last<TP.Trackpoint>(track)) {
                 case null { null };
@@ -128,16 +174,34 @@ module {
         };
 
         public func getMetadata () : Metadata {
-            {
+            // TODO: shall we report error or return empty Start and Land? 
+            var startText : ?Text = null;
+            var landText : ?Text = null;
+            
+            switch (getStart()) {
+                case (#err(_)) {
+                };
+                case(#ok(start)) {
+                    startText := ? DT.prettyDateTime(? start); 
+                };
+            };            
+            switch (getLand()) {
+                case (#err(_)) {};
+                case(#ok(land)) {
+                    landText := ? DT.prettyDateTime(? land); 
+                };
+            };
+
+            return {
                 trackId = getTrackId();
                 timestamp = timestamp;
                 gliderId = getGliderID();
                 gliderPilot = getPilot();
                 gliderType = getGliderType();
                 gliderClass = getGliderClass();
-                competitionId = getCompetionId();
-                start = ? H.prettyDateTime(? getStart());
-                land = ? H.prettyDateTime(? getLand());
+                competitionId = getCompetionId();           
+                start = startText;
+                land = landText;
                 bbox = getBBox();
             };
         };
@@ -212,10 +276,9 @@ module {
                 switch(first) {
                     case('A') {
                         track.headers.put("UnitId", T.trimEnd(T.trimStart(line, #char 'A'), #char cr));
-                        //track.unitId := T.trimEnd(T.trimStart(line, #char 'A'), #char cr);
                         };
                     case('H') {
-                        Debug.print("Header: " # line);
+                        Debug.print("igcTrack parseIGCTrack: HeaderLine: " # line);
                         let headerline :Text = T.trimEnd(T.trimStart(line, #char 'H'), #char cr);
                         let it_parts : I.Iter<Text> = T.split(headerline, #char ':');
                         let ar_parts = I.toArray<Text>(it_parts);
@@ -224,15 +287,14 @@ module {
                         };                       
                     };
                     case('B'){
-                        // Debug.print("Trackpoint: " # line);
+                        // Debug.print("igcTrack parseIGCTrack: Trackpoint: " # line);
                         // if we can parse the Line - add the trackpoint
-                        //let tp : ?TP.Trackpoint = TP.parseTrackpoint(line);
                         switch (TP.parseTrackpoint(line)) {
-                            case null {
-                                // Debug.print("cannot read Trackpoint: " # line # "  - parsing error");
+                            case (#err(_)) {
+                                Debug.print("igcTrack parseIGCTrack: cannot read Trackpoint: " # line # "  - parsing error");
                             };
-                            case (?(tp)) {
-                                // Debug.print("Read Trackpoint " # line);
+                            case (#ok(tp)) {
+                                // Debug.print("igcTrack parseIGCTrack: Read Trackpoint " # line);
                                 track.addTrackpoint(tp);
                             };
                         }

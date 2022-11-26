@@ -6,6 +6,7 @@ import TM "igcTrackMap";
 import TR "igcTrack";
 import H "helper";
 import JH "jsonHelper";
+import DT "dateTime";
 
 module {
     type representation = {#json; #html};
@@ -72,7 +73,7 @@ module {
 
         body #= apiJSONText(? mapMetadata.title, ? mapMetadata.description, ? mapMetadata.id, baseURL # "/collections/" # mapMetadata.id, 
                             ["Collection", "Glider", "Flights"], mapMetadata.bbox, 
-                            ? H.prettyDateTime(mapMetadata.start), ? H.prettyDateTime(mapMetadata.land), true);
+                            ? DT.prettyDateTime(mapMetadata.start), ? DT.prettyDateTime(mapMetadata.land), true);
         
         body #= ","# JH.lb();
 
