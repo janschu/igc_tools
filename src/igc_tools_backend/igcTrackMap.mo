@@ -28,11 +28,20 @@ module {
         // Store all Tracks in a HashMap with ID composed of UnitID, Date and Starttime
         // Use additional index to filter planes etc.
         public var tracks : HM.HashMap<Text,TR.Track> = HM.HashMap<Text,TR.Track>(10,T.equal,T.hash); 
+        public var metadata : Metadata = {
+            title = "Glider Flights";
+            description = "Flight Collection";
+            id = "FC"; // complete Feature Collection
+            bbox = {minLat=0; minLon=0; maxLat=0; maxLon=0};
+            start = null;
+            land = null;
+        };
 
         // add a track and return the Id
         public func addTrack(track: TR.Track) : Text {
             let trackId : Text = track.getTrackId();
             tracks.put(trackId,track);
+            updateMetadata(track);
             return trackId;
         };
  
@@ -51,12 +60,12 @@ module {
             tracks.get(trackId);
         };
 
-        // hardcoded Metadata
-        public func getMetadata() : Metadata {
-            return {
+        // update Metadata
+        private func updateMetadata(track: TR.Track) {
+            metadata := {
                 title = "Glider Flights";
-                description = "Some Recorded Flights";
-                id = "FC";
+                description = metadata.description # " / TrackId: " # track.getTrackId();
+                id = metadata.id;
                 start = R.toOption(getTemporalStart());
                 land = R.toOption(getTemporalEnd());
                 bbox = getBBox();

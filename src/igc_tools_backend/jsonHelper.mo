@@ -18,7 +18,7 @@ module {
     };
     
     // return a kvp if not null
-    public func optKvpJSON (key:Text, value: ?Text, comma:Bool) : Text {
+    public func optKvpJSON (key: Text, value: ?Text, comma: Bool) : Text {
         switch (value) {
             case (null) {
                 return "";

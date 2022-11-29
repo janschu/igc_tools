@@ -17,11 +17,15 @@ module {
     };
 
     private func getCollectionsSingleMapJSON (map: TM.TrackMap, baseURL: Text) : Text {
-        let mapMetadata : TM.Metadata = map.getMetadata();
+//        let mapMetadata : TM.Metadata = map.getMetadata();
 
-        OC.apiJSONText(? mapMetadata.title, ? mapMetadata.description, ? mapMetadata.id, baseURL # "/collections/" # mapMetadata.id, 
+/*         OC.apiJSONText(? mapMetadata.title, ? mapMetadata.description, ? mapMetadata.id, baseURL # "/collections/" # mapMetadata.id, 
                             ["Collection", "Glider", "Flights"], mapMetadata.bbox, 
-                            ? DT.prettyDateTime(mapMetadata.start), ? DT.prettyDateTime(mapMetadata.land), true);
+                            ? DT.prettyDateTime(mapMetadata.start), ? DT.prettyDateTime(mapMetadata.land), true); */
+
+        OC.apiJSONText(? map.metadata.title, ? map.metadata.description, ? map.metadata.id, baseURL # "/collections/" # map.metadata.id, 
+                            ["Collection", "Glider", "Flights"], map.metadata.bbox, 
+                            ? DT.prettyDateTime(map.metadata.start), ? DT.prettyDateTime(map.metadata.land), true);
     };
 
     private func getCollectionsSingleMapHTML (map: TM.TrackMap, baseURL: Text) : Text {

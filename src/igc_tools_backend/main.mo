@@ -206,7 +206,7 @@ actor {
   var trackmap : TM.TrackMap = TM.TrackMap();
 
   public func getOGCRootMetadata () : async TM.Metadata {
-    return trackmap.getMetadata();
+    return trackmap.metadata;
   };
 
   public func uploadIGC (igcText : Text) : async Text {

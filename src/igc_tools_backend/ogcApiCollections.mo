@@ -69,12 +69,16 @@ module {
         body #=","#JH.lb(); 
         body #= "\"collections\": ["# JH.lb();
         // all tracks as one FC
-        let mapMetadata : TM.Metadata = map.getMetadata();
+        // let mapMetadata : TM.Metadata = map.getMetadata();
 
-        body #= apiJSONText(? mapMetadata.title, ? mapMetadata.description, ? mapMetadata.id, baseURL # "/collections/" # mapMetadata.id, 
-                            ["Collection", "Glider", "Flights"], mapMetadata.bbox, 
-                            ? DT.prettyDateTime(mapMetadata.start), ? DT.prettyDateTime(mapMetadata.land), true);
+        // body #= apiJSONText(? mapMetadata.title, ? mapMetadata.description, ? mapMetadata.id, baseURL # "/collections/" # mapMetadata.id, 
+        //                   ["Collection", "Glider", "Flights"], mapMetadata.bbox, 
+        //                   ? DT.prettyDateTime(mapMetadata.start), ? DT.prettyDateTime(mapMetadata.land), true);
         
+        body #= apiJSONText(? map.metadata.title, ? map.metadata.description, ? map.metadata.id, baseURL # "/collections/" # map.metadata.id, 
+                            ["Collection", "Glider", "Flights"], map.metadata.bbox, 
+                            ? DT.prettyDateTime(map.metadata.start), ? DT.prettyDateTime(map.metadata.land), true);
+
         body #= ","# JH.lb();
 
         // each Track as Point FC

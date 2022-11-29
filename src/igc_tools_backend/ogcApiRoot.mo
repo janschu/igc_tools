@@ -76,8 +76,8 @@ module {
         // Open
         var body : Text = "{" # JH.lb();
         // Metadata
-        body #= JH.kvpJSON("title", map.getMetadata().title, true);
-        body #= JH.kvpJSON("description", map.getMetadata().description, true);
+        body #= JH.kvpJSON("title", map.metadata.title, true);
+        body #= JH.kvpJSON("description", map.metadata.description, true);
 
         // catalog
         // body #= JH.kvpJSON("catalogUri", baseURL,true);
