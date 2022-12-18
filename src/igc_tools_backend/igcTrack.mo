@@ -32,7 +32,8 @@ module {
 
     // The Track will be constructed empty - then added points and header elements
     public class Track () {
-        var track : L.List <TP.Trackpoint> = L.nil<TP.Trackpoint>();  
+        var track : L.List <TP.Trackpoint> = L.nil<TP.Trackpoint>();
+        // TODO Maybe remove the headers and only use the Metadata  
         public var headers : HM.HashMap<Text,Text> = HM.HashMap<Text,Text>(10,T.equal,T.hash);
         let timestamp: Ti.Time = Ti.now();
     
@@ -121,7 +122,7 @@ module {
             Debug.print("Enter igcTrack getLandTime");
             switch (L.get<TP.Trackpoint>(track,0)) {
                 case null { 
-                    Debug.print("No Trackpoint 0 found");
+                    Debug.print("No Trackpoint found");
                     null;
                  };
                 case (?tp) {
@@ -133,7 +134,9 @@ module {
         // null if no trackpoints
         private func getStartTime () : ?Text {
             switch (L.last<TP.Trackpoint>(track)) {
-                case null { null };
+                case null { 
+                    Debug.print("No Trackpoint found");
+                    null };
                 case (?tp) {
                     ?tp.timestamp;
                 };
