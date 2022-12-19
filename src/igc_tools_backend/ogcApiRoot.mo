@@ -6,6 +6,7 @@ import TM "igcTrackMap";
 import TR "igcTrack";
 import H "helper";
 import JH "jsonHelper";
+import HTML "html_helper";
 
 
 module {
@@ -121,18 +122,11 @@ module {
     // HTML Representation
     // not implemented 
     private func getRootHTML (map: TM.TrackMap, baseURL: Text) : Text {
-        // Open
-        var doc : Text = "<!DOCTYPE html>";
-        doc #= "<html>";
-            doc #= "<head>";
-            doc #= "</head>";
-
-            doc #= "<body>";
-                doc #= "<b>";
-                doc #= "Not implemented";
-                doc #= "</b>";
-            doc #= "</body>";
-        doc #= "</html>";
-        return doc; 
+        // Head
+        // empty
+        // Body
+        var body :Text = HTML.createTag("b",?"not implemented", null);
+        body #= HTML.create_A("Hallo","http://www.yahoo.de",null,?"testclass");
+        return HTML.createPage(null,?body);
     };
 };

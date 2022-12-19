@@ -94,7 +94,7 @@ actor {
       return {
           status_code = 200;
           headers = [];
-          body = Text.encodeUtf8(OR.getRootPage(trackmap,baseURL,#json));
+          body = Text.encodeUtf8(OR.getRootPage(trackmap,baseURL,#html));
           };
     };
     // Conformance
