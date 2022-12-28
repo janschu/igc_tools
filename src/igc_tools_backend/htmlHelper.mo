@@ -1,16 +1,17 @@
 import L "mo:base/List";
 import I "mo:base/Iter";
+import T "mo:base/Text";
 
 module {
     public type attribute = {attname: Text; attval: Text}; 
 
     /// Open a simple Tag
-    public func openSimpleTag (name: Text): Text {
-        openTag(name, null);
+    public func openSimpleTag (name: Text, closing: Bool): Text {
+        openTag(name, null, closing);
     };
     
     /// Open a Tag with attributes
-    public func openTag (name: Text, attributes: ?L.List <attribute>) : Text {
+    public func openTag (name: Text, attributes: ?L.List <attribute>, closing: Bool) : Text {
         var tag = "<";
         tag #=name;
         switch (attributes){
@@ -23,6 +24,9 @@ module {
                 }
             };
         };
+        if (closing) {
+            tag #= "/";
+        };
         tag #=">";
         return tag;
     };
@@ -33,15 +37,18 @@ module {
     };
 
     /// Create a Tag with content and attributes
-    public func createTag (name: Text, content: ?Text, attributes: ?L.List <attribute>): Text {
-        var tag = openTag(name, attributes);
+    public func createTag (name: Text, content: ?Text, attributes: ?L.List <attribute>): Text {       
+        var tag : Text = "";
         switch (content){
-            case null {};
+            case null {
+                tag #= openTag(name, attributes, true);
+            };
             case (? text) {
+                tag #= openTag(name, attributes, false);
                 tag #= text;
+                tag #= closeTag(name);
             };
         };
-        tag #= closeTag(name);
         return tag;
     };
 
@@ -91,11 +98,49 @@ module {
         return doc;
     };
 
+    // -------------------------------------------------------------------------------------
+    // Header Tags
+    // -------------------------------------------------------------------------------------
+    /// Create a Link Tag
+    public func create_Link (rel: Text, href: Text) : Text {
+        var att : L.List <attribute> = L.fromArray<attribute>([
+            {attname = "rel"; attval = rel},
+            {attname = "href"; attval = href;}]);
+        return createTag("link", null, ?att);
+    };
 
-    /// Create a Link
+    /// Create a Meta Name Content
+        public func create_MetaNameContent (name: Text, content: Text) : Text {
+        var att : L.List <attribute> = L.fromArray<attribute>([
+            {attname = "name"; attval = name;},
+            {attname = "content"; attval = content;}]);
+        return createTag("meta", null, ?att);
+    };
+
+    /// Create a Meta Charset
+        public func create_MetaCharset (charset: Text) : Text {
+        var att : L.List <attribute> = L.fromArray<attribute>([
+            {attname = "charset"; attval = charset;}]);
+        return createTag("meta", null, ?att);
+    };
+
+
+    // -------------------------------------------------------------------------------------
+    // Body Tags
+    // -------------------------------------------------------------------------------------
+    /// Create a Hyperlink
     public func create_A (bodyContent: Text, href: Text, id : ?Text, cssClass : ?Text) : Text {
         var att : L.List <attribute> = L.fromArray<attribute>([{attname = "href"; attval = href;}]);
         return createContentTag("a", ?bodyContent, ?att, id, cssClass);
+    };
+
+    public func appendURLParam (url: Text, key: Text, value: Text) : Text {
+        // simply check for ?
+        if (T.contains(url, #char('?'))){
+            return url # "&" # key # "=" # value;
+        } else {
+            return url # "?" # key # "=" # value;
+        }
     };
 
     /// Create a div
@@ -118,6 +163,11 @@ module {
         return createContentTag("H3", ?bodyContent, null, id, cssClass);
     };
 
+    /// Create a Quote
+    public func create_Q (bodyContent: Text, id : ?Text, cssClass : ?Text) : Text {
+        return createContentTag("q", ?bodyContent, null, id, cssClass);
+    };
+
     /// Create a LIst Item
     // Todo: Do we need attributes?
     public func create_Li (bodyContent: Text, id : ?Text, cssClass : ?Text) : Text {
@@ -128,8 +178,31 @@ module {
     // Todo: Do we need attributes?
      public func create_Ul (bodyContent: Text, id : ?Text, cssClass : ?Text) : Text {
         return createContentTag("ul", ?bodyContent, null, id, cssClass);
-    };  
+    }; 
+
+    /// Create a Header Block
+    // Todo: Do we need attributes?
+     public func create_Header (bodyContent: Text, id : ?Text, cssClass : ?Text) : Text {
+        return createContentTag("header", ?bodyContent, null, id, cssClass);
+    }; 
+
+    /// Create a Nav Block
+    // Todo: Do we need attributes?
+     public func create_Nav (bodyContent: Text, id : ?Text, cssClass : ?Text) : Text {
+        return createContentTag("nav", ?bodyContent, null, id, cssClass);
+    }; 
     
-     
+    
+    /// Create a Main Block
+    // Todo: Do we need attributes?
+     public func create_Main (bodyContent: Text, id : ?Text, cssClass : ?Text) : Text {
+        return createContentTag("main", ?bodyContent, null, id, cssClass);
+    };
+
+    /// Create a Footer Block
+    // Todo: Do we need attributes?
+     public func create_Footer (bodyContent: Text, id : ?Text, cssClass : ?Text) : Text {
+        return createContentTag("footer", ?bodyContent, null, id, cssClass);
+    }; 
     
 }

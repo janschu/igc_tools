@@ -6,7 +6,7 @@ import TM "igcTrackMap";
 import TR "igcTrack";
 import H "helper";
 import JH "jsonHelper";
-import HTML "html_helper";
+import HTML "htmlHelper";
 
 
 module {
@@ -15,8 +15,9 @@ module {
     public func getRootPage (map: TM.TrackMap, baseURL: Text, repr: H.Representation ): Text {
         if (repr == #json) {
             return getRootJSON(map,baseURL);
-        };
-        return getRootHTML(map,baseURL);
+        } else {
+            return getRootHTML(map,baseURL);
+       };
     };
 
 
@@ -122,11 +123,74 @@ module {
     // HTML Representation
     // not implemented 
     private func getRootHTML (map: TM.TrackMap, baseURL: Text) : Text {
-        // Head
-        // empty
+        // - Head
+        var head : Text = HTML.create_MetaCharset("utf-8");
+        head #= HTML.create_MetaNameContent("viewport","width=device-width, initial-scale=1" );
+        head #= HTML.create_Link("stylesheet", "https://cdn.simplecss.org/simple.min.css");
+        
+        // - Body Parts
+
+        // - - Header Parts
+        var headerContent :Text = "";
+        // - - - Nav
+        var navContent : Text = "";
+        navContent #= HTML.create_A("JSON", "/?f=JSON", null, null);
+        navContent #= HTML.create_A("Home", "/", null, ?"current");
+        // - - Header
+        headerContent #= HTML.create_Nav(navContent,null,null);
+        headerContent #= HTML.create_H1("API Root Page", null, null);
+        headerContent #= HTML.create_Div("The landing page for Flight Data", null, null);
+        // Main
+        var mainContent : Text = "";
+        mainContent #= HTML.create_H1("Links:", null, null);
+        // Link to collection page
+        mainContent #= HTML.create_H2("Collections Page", null, null);
+        mainContent #= HTML.create_H3(
+            HTML.create_A("Collections HTML", "/collections", null, null),null,null);
+        mainContent #= HTML.create_Div("The Listing of all available Feature Collections - as HTML",null, null);
+        mainContent #= HTML.create_H3(
+            HTML.create_A("Collections JSON", "/collections?f=JSON", null, null),null,null);
+        mainContent #= HTML.create_Div("The Listing of all available Feature Collections - JSON for GIS applications",null, null);       
+
+        // Link to the landing page
+        mainContent #= HTML.create_H2("Landing Page", null, null);
+        mainContent #= HTML.create_H3(
+            HTML.create_A("Home HTML", "/", null, ?"current"),null,null);
+        mainContent #= HTML.create_Div("This Page - The landing page as HTML",null, null);
+        mainContent #= HTML.create_H3(
+            HTML.create_A("Home JSON", "/?f=JSON", null, ?"current"),null,null);
+        mainContent #= HTML.create_Div("The landing page as JSON. The same content as this page but useful for GIS Clients",null, null);
+        // Link to the API Page
+        // TODO define the pages
+        mainContent #= HTML.create_H2("API Description", null, null);
+        mainContent #= HTML.create_H3(
+            HTML.create_A("API HTML", "/api", null, null),null,null);
+        mainContent #= HTML.create_Div("The documentation of the interfaces as html (currently not implemented)",null, null);
+        mainContent #= HTML.create_H3(
+            HTML.create_A("API JSON", "/api?f=JSON", null, null),null,null);
+        mainContent #= HTML.create_Div("The documentation of the interfaces as json - swagger file (currently not implemented)",null, null);
+        // Link to the Conformance Page
+        // TODO define the pages
+        mainContent #= HTML.create_H2("Conformance Classes", null, null);
+        mainContent #= HTML.create_H3(
+            HTML.create_A("Conformance HTML", "/conformance", null, null),null,null);
+        mainContent #= HTML.create_Div("The conformance classes according to OGC (currently not implemented)",null, null);
+        mainContent #= HTML.create_H3(
+            HTML.create_A("Conformance JSON", "/conformance?f=JSON", null, null),null,null);
+        mainContent #= HTML.create_Div("The conformance classes according to OGC as JSON (currently not implemented)",null, null);
+
+
+        // Footer
+        var footerContent : Text = "";
+        footerContent #= HTML.create_Div("Test for OGC on IC", null, null);
+        
         // Body
-        var body :Text = HTML.createTag("b",?"not implemented", null);
-        body #= HTML.create_A("Hallo","http://www.yahoo.de",null,?"testclass");
-        return HTML.createPage(null,?body);
+        var body :Text = "";
+        body #= HTML.create_Header(headerContent, null, null);
+        body #= HTML.create_Main(mainContent, null, null);
+        body #= HTML.create_Footer(footerContent, null, null);
+    	
+        
+        return HTML.createPage(?head,?body);
     };
 };
