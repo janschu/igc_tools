@@ -163,7 +163,7 @@ actor {
           return {
             status_code = 200;
             headers = [];
-            body = Text.encodeUtf8(OCS.getCollectionsSingleMap (trackmap,baseURL,#json));
+            body = Text.encodeUtf8(OCS.getCollectionsSingleMap (trackmap,baseURL,urlPattern.format));
           };  
         };
         switch (trackmap.getTrackById(urlPattern.path[1])) {
@@ -171,7 +171,7 @@ actor {
             return {
               status_code = 200;
               headers = [];
-              body = Text.encodeUtf8(OCS.getCollectionsSingleTrack(track,baseURL,#json));
+              body = Text.encodeUtf8(OCS.getCollectionsSingleTrack(track,baseURL,urlPattern.format));
             };
           };
           case _ {

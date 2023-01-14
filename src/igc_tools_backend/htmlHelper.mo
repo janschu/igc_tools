@@ -109,6 +109,31 @@ module {
         return createTag("link", null, ?att);
     };
 
+    /// Create a Script Tag
+    public func create_Script (content: ?Text, url : ?Text) : Text {
+        // must openb and close the script tag?
+        var scriptTag : Text = "";
+        switch (url) {
+            case (?src) {
+                var att :L.List <attribute> = L.fromArray<attribute>([{attname="src";attval=src}]);             
+                scriptTag #= openTag("script", ?att, false);
+                };
+            case (_) {
+                scriptTag #= openTag ("script", null, false);};
+        };
+        switch (content) {
+            case (?innerContent) {scriptTag #= innerContent;};
+            case (_) {};
+        };
+        scriptTag #= closeTag("script");
+        return scriptTag;
+    };
+
+    /// Create a Style Tag
+    public func create_Style (style: Text) : Text {
+        return createTag("style", ?style, null);
+    };   
+
     /// Create a Meta Name Content
         public func create_MetaNameContent (name: Text, content: Text) : Text {
         var att : L.List <attribute> = L.fromArray<attribute>([
