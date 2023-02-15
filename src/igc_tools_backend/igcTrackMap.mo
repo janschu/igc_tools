@@ -3,6 +3,7 @@ import HM "mo:base/HashMap";
 import B "mo:base/Buffer";
 import T "mo:base/Text";
 import R "mo:base/Result";
+import F "mo:base/Float";
 import Debug "mo:base/Debug";
 // Local
 import H "helper";
@@ -123,7 +124,7 @@ module {
             return #err(#nullError);
         };
 
-        private func getBBox () : H.BBox {
+        public func getBBox () : H.BBox {
             var box : H.BBox = {minLat=0; minLon=0; maxLat=0; maxLon=0};
             let iterTracks : I.Iter<TR.Track> = tracks.vals();
             I.iterate<TR.Track>(iterTracks, func(track, _index) {
@@ -135,7 +136,6 @@ module {
             });
             return box;
         };
-
 
         // one collection with all Line Features
         // a collection with one feature

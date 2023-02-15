@@ -25,7 +25,7 @@ actor {
   };
 
   // the faster 'query' does not work here
-  public query func http_request(request : HttpRequest) : async HttpResponse {
+/*   public query func http_request(request : HttpRequest) : async HttpResponse {
     let heads : I.Iter <HeaderField> = request.headers.vals();
     var textBody : Text = "das nervt!";
     {
@@ -33,6 +33,6 @@ actor {
       headers = [];
       body = T.encodeUtf8(textBody);
     };
-  };
+  }; */
 
 };

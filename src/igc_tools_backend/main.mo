@@ -3,13 +3,16 @@ import Buffer "mo:base/Buffer";
 import Debug "mo:base/Debug";
 import Text "mo:base/Text";
 import Principal "mo:base/Principal";
+import Array "mo:base/Array";
 
 // local
+import H "helper";
 import TR "igcTrack";
 import TM "igcTrackMap";
 import OR "ogcApiRoot";
 import OC "ogcApiCollections";
 import OCS "ogcApiCollectionsSingle";
+import OCSI "ogcApiCollectionsSingleItems";
 import OCF "ogcApiConformance";
 
 actor { 
@@ -45,13 +48,20 @@ actor {
   //   };
   // };
 
+  // private type formatType = {#html; #json; #undefined};
+  
   private type URLPattern = {
     path : [Text];
     queryParams : [(Text,Text)];
-    format : {#html;#json;#undefined};
+    format : H.Representation;
   };
 
   private func parseURL (request : HttpRequest) : URLPattern {
+    Debug.print("Function: parseURL");
+    Debug.print("Request Method: " # request.method);
+    Debug.print("Request URL" # request.url);
+    Debug.print("Request Headers" # debug_show(request.headers));
+    Debug.print("Request Body" # debug_show(request.body));
     // split path and queryParams -> result shall be of size 1 or 2
     let urlparts : [Text] = Iter.toArray(Text.tokens(request.url, #char '?'));
     // split path components
@@ -66,12 +76,44 @@ actor {
         kvpBuffer.add((kvp[0],kvp[1]));
       });
     };
-    // TODO Check the requested format
-    // currently fixed to json
+    let qp : [(Text, Text)] = kvpBuffer.toArray();
+    // Check the requested format - query param with higher priority
+    var rf : H.Representation = getResponseFormatQuery(qp);
+    if (rf == #undefined) {
+      rf := getResponseFormatHeader (request.headers);
+    };
     return {
       path = pathComponents;
-      queryParams = kvpBuffer.toArray();
-      format = #json;
+      queryParams = qp;
+      format = rf;
+    };
+  };
+
+  private func getResponseFormatQuery (queryParams: [(Text, Text)]): H.Representation {
+    let format : ?(Text,Text) = Array.find<(Text,Text)>(queryParams, func (x) {x.0 =="f"});
+    switch format {
+      case (?pair) {
+        if (pair.1=="html" or pair.1=="HTML") {return #html} 
+        else if (pair.1=="json" or pair.1=="JSON") {return #json}
+        else return #undefined;
+      };
+      case (_) {
+        return #undefined;
+      };
+    };
+  };
+
+  private func getResponseFormatHeader(requestHeaders: [KVP]): H.Representation {
+    let format : ?KVP = Array.find<KVP>(requestHeaders, func (x) {x.0 == "accept"});
+    switch format {
+      case (?pair) {
+        if (Text.contains(pair.1,#text("application/json"))){return #json}
+        else if (Text.contains(pair.1,#text("text/html"))){return #html}
+        else return #undefined;
+      };
+      case (_) {
+        return #undefined;
+      };
     };
   };
 
@@ -86,7 +128,9 @@ actor {
   //
   // TODO: Filter BBOX, DateTime
   public query func http_request(request : HttpRequest) : async HttpResponse {  
+    Debug.print("Function HttpRequest");
     let urlPattern : URLPattern = parseURL(request);
+    
     Debug.print(debug_show(urlPattern));
     // test the possible combinations
     // Root
@@ -94,7 +138,7 @@ actor {
       return {
           status_code = 200;
           headers = [];
-          body = Text.encodeUtf8(OR.getRootPage(trackmap,baseURL,#json));
+          body = Text.encodeUtf8(OR.getRootPage(trackmap,baseURL,urlPattern.format));
           };
     };
     // Conformance
@@ -110,7 +154,7 @@ actor {
       return {
           status_code = 200;
           headers = [];
-          body = Text.encodeUtf8(OC.getCollectionsPage(trackmap,baseURL,#json));
+          body = Text.encodeUtf8(OC.getCollectionsPage(trackmap,baseURL,urlPattern.format));
           };
     };
     // Single Collections
@@ -120,7 +164,7 @@ actor {
           return {
             status_code = 200;
             headers = [];
-            body = Text.encodeUtf8(OCS.getCollectionsSingleMap (trackmap,baseURL,#json));
+            body = Text.encodeUtf8(OCS.getCollectionsSingleMap (trackmap,baseURL,urlPattern.format));
           };  
         };
         switch (trackmap.getTrackById(urlPattern.path[1])) {
@@ -128,7 +172,7 @@ actor {
             return {
               status_code = 200;
               headers = [];
-              body = Text.encodeUtf8(OCS.getCollectionsSingleTrack(track,baseURL,#json));
+              body = Text.encodeUtf8(OCS.getCollectionsSingleTrack(track,baseURL,urlPattern.format));
             };
           };
           case _ {
@@ -147,7 +191,8 @@ actor {
           return {
             status_code = 200;
             headers = [];
-            body = Text.encodeUtf8(trackmap.getGeoJSONLineCollection ());
+            body = Text.encodeUtf8(OCSI.getCollectionsSingleMapItems(trackmap,baseURL,urlPattern.format));
+            // body = Text.encodeUtf8(trackmap.getGeoJSONLineCollection ());
           };  
         };
         switch (trackmap.getTrackById(urlPattern.path[1])) {
@@ -155,7 +200,8 @@ actor {
             return {
               status_code = 200;
               headers = [];
-              body = Text.encodeUtf8(track.getGeoJSONPointCollection());
+              body = Text.encodeUtf8(OCSI.getCollectionsSingleTrackItems(track,baseURL,urlPattern.format));
+              // body = Text.encodeUtf8(track.getGeoJSONPointCollection());
             };
           };
           case _ {
@@ -196,7 +242,6 @@ actor {
     ///
   };
 
-  ///////
 
 
 

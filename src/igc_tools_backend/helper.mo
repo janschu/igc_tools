@@ -15,7 +15,7 @@ module {
     public type HelperError = {#parseError; #numberToBig};
 
     // which representation used 
-    public type Representation = {#json; #html};
+    public type Representation = {#json; #html; #undefined};
 
     // Text fromat helpers
     // Helper from https://forum.dfinity.org/t/subtext-substring-function-in-motoko/11838/2

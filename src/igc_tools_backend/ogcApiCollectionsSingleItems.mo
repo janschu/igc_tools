@@ -10,44 +10,42 @@ import HTML "htmlHelper";
 
 module {
 
-    // The complete Map as FC
-    public func getCollectionsSingleMap (map: TM.TrackMap, baseURL: Text, repr: H.Representation ): Text {
+    // The Items of the complete map
+    public func getCollectionsSingleMapItems (map: TM.TrackMap, baseURL: Text, repr: H.Representation ): Text {
         if (repr == #json) {
-            return getCollectionsSingleMapJSON(map,baseURL);
+            return getCollectionsSingleMapItemsJSON(map,baseURL);
         };
-        return getCollectionsSingleMapHTML(map,baseURL);
+        return getCollectionsSingleMapItemsHTML(map,baseURL);
     };
 
-    private func getCollectionsSingleMapJSON (map: TM.TrackMap, baseURL: Text) : Text {
-//        let mapMetadata : TM.Metadata = map.getMetadata();
-        OC.apiJSONText(? map.metadata.title, ? map.metadata.description, ? map.metadata.id, baseURL # "/collections/" # map.metadata.id, 
-                            ["Collection", "Glider", "Flights"], map.metadata.bbox, 
-                            ? DT.prettyDateTime(map.metadata.start), ? DT.prettyDateTime(map.metadata.land), true);
+    private func getCollectionsSingleMapItemsJSON (map: TM.TrackMap, baseURL: Text) : Text {
+        return map.getGeoJSONLineCollection ();
     };
 
-    private func getCollectionsSingleMapHTML (map: TM.TrackMap, baseURL: Text) : Text {
-        return htmlSkeletonCollection(map.getBBox(), "FC");       
+    private func getCollectionsSingleMapItemsHTML (map: TM.TrackMap, baseURL: Text) : Text {
+        return htmlSkeletonCollection(map.getGeoJSONLineCollection (), map.getBBox(), "FC");       
     };
 
-
-    public func getCollectionsSingleTrack (track: TR.Track, baseURL: Text, repr: H.Representation ): Text {
+    // The Items of a single Track
+    
+    public func getCollectionsSingleTrackItems (track: TR.Track, baseURL: Text, repr: H.Representation ): Text {
         if (repr == #json) {
-            return getCollectionsSingleTrackJSON(track,baseURL);
+            return getCollectionsSingleTrackItemsJSON(track,baseURL);
         };
-        return getCollectionsSingleTrackHTML(track,baseURL);
+        return getCollectionsSingleTrackItemsHTML(track,baseURL);
     };
 
-    private func getCollectionsSingleTrackJSON (track: TR.Track, baseURL: Text) : Text {
-        OC.apiJSONTrack(track,baseURL); 
+    private func getCollectionsSingleTrackItemsJSON (track: TR.Track, baseURL: Text) : Text {
+        track.getGeoJSONPointCollection();
     };
 
-    private func getCollectionsSingleTrackHTML (track: TR.Track, baseURL: Text) : Text {
-        return htmlSkeletonCollection(track.getBBox(), track.getTrackId());
+    private func getCollectionsSingleTrackItemsHTML (track: TR.Track, baseURL: Text) : Text {
+        return htmlSkeletonCollection(track.getGeoJSONPointCollectionChunk(0,10), track.getBBox(), track.getTrackId());
     };
 
     // Helper for HTML Skeleton
     // Genetates the page with a JSON and the ID
-    private func htmlSkeletonCollection (extent: H.BBox, collectionID : Text) : Text {
+    private func htmlSkeletonCollection (geoJSON: Text, extent: H.BBox, collectionID : Text) : Text {
        // head
         var head : Text = HTML.create_MetaCharset("utf-8");
         head #= HTML.create_MetaNameContent("viewport","width=device-width, initial-scale=1" );
@@ -58,7 +56,7 @@ module {
         // Init Leaflet - this is ugly
         var mapScript : Text = "function initMap(event){";
         mapScript #= "var flightMap = L.map('FlightMap');";
-        //mapScript #= "flightMap.setView([53.04229, 8.6335013],10, );";
+        mapScript #= "flightMap.setView([53.04229, 8.6335013],10, );";
         mapScript #= "flightMap.fitBounds([[" # F.toText(extent.minLat) # ", " # F.toText(extent.minLon) # "], [" # F.toText(extent.maxLat) # "," # F.toText(extent.maxLon) # "]]);";
         mapScript #= "var topPlusLayer = L.tileLayer.wms('http://sgx.geodatenzentrum.de/wms_topplus_open?',";
         mapScript #= " {format: 'image/png', layers: 'web',";
@@ -67,8 +65,8 @@ module {
 
         // Get the flights
         mapScript #= "var flightFeatures = ";
-        //mapScript #= getCollectionsSingleMapJSON (map: TM.TrackMap, baseURL: Text) # ";";
-        mapScript #= getBBoxJSONFeature(extent) # ";";
+        mapScript #= geoJSON # ";";
+        //mapScript #= getBBoxJSONFeature(extent) # ";";
         mapScript #= "L.geoJSON(flightFeatures).addTo(flightMap);";
 
         mapScript #= "};";
