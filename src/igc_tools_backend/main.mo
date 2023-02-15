@@ -12,6 +12,7 @@ import TM "igcTrackMap";
 import OR "ogcApiRoot";
 import OC "ogcApiCollections";
 import OCS "ogcApiCollectionsSingle";
+import OCSI "ogcApiCollectionsSingleItems";
 import OCF "ogcApiConformance";
 
 actor { 
@@ -190,7 +191,8 @@ actor {
           return {
             status_code = 200;
             headers = [];
-            body = Text.encodeUtf8(trackmap.getGeoJSONLineCollection ());
+            body = Text.encodeUtf8(OCSI.getCollectionsSingleMapItems(trackmap,baseURL,urlPattern.format));
+            // body = Text.encodeUtf8(trackmap.getGeoJSONLineCollection ());
           };  
         };
         switch (trackmap.getTrackById(urlPattern.path[1])) {
@@ -198,7 +200,8 @@ actor {
             return {
               status_code = 200;
               headers = [];
-              body = Text.encodeUtf8(track.getGeoJSONPointCollection());
+              body = Text.encodeUtf8(OCSI.getCollectionsSingleTrackItems(track,baseURL,urlPattern.format));
+              // body = Text.encodeUtf8(track.getGeoJSONPointCollection());
             };
           };
           case _ {

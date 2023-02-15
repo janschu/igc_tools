@@ -12,6 +12,7 @@ import R "mo:base/Result";
 import TP "igcTrackPoint";
 import H "helper";
 import DT "dateTime";
+import Int "mo:base/Int";
 
 module {
 
@@ -266,6 +267,35 @@ module {
             jsonFeatureCollection #= "]}";
             return jsonFeatureCollection;
         };
+
+        // get single Point By Id
+        public func getGeoJSONPointItem (id : Nat) : ?Text {
+            if (L.size(track) >= id) {
+                return null;
+            };
+            let points: [TP.Trackpoint] = L.toArray(track);
+            return ?points[id].getJSONPointFeature();
+        };
+
+        // get chunk
+        // TODO: is null better than empty collection? 
+        public func getGeoJSONPointCollectionChunk (start: Nat, end: Nat) : Text {
+            var jsonFeatureCollection : Text = "{\"type\": \"FeatureCollection\", \"features\": [";
+            let tpoints : I.Iter<TP.Trackpoint> = L.toIter<TP.Trackpoint> (track);
+            let size : Nat  = L.size(track);
+            var counter : Nat = 0;
+            for (tp in tpoints) {
+                counter += 1;
+                if (counter > start and counter <= end) {
+                    jsonFeatureCollection #= tp.getJSONPointFeature ();
+                    if (counter < end){
+                        jsonFeatureCollection := jsonFeatureCollection # ",";
+                    };
+                };
+            };
+            jsonFeatureCollection #= "]}";
+            return jsonFeatureCollection;
+        };           
     };
 
     public func parseIGCTrack (igcText :Text) : Track {
