@@ -146,7 +146,7 @@ actor {
       return {
           status_code = 200;
           headers = [];
-          body = Text.encodeUtf8(OCF.getConformancePage(#json));
+          body = Text.encodeUtf8(OCF.getConformancePage(urlPattern.format));
           };
     };   
     // Collections

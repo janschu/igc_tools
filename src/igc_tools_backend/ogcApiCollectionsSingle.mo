@@ -84,9 +84,13 @@ module {
         var headerContent :Text = "";
         // - - - Nav
         var navContent : Text = "";
-        navContent #= HTML.create_A("JSON", "/?f=JSON", null, null);
-        navContent #= HTML.create_A("Home", "/", null, null);
-        navContent #= HTML.create_A("Collections", "/collections", null, ?"current");
+        navContent #= HTML.create_A("Landing", "/", null, null);
+        navContent #= HTML.create_A("Collections", "/collections", null, null);
+        navContent #= HTML.create_A("Service Description", "https://m2ifq-raaaa-aaaah-abtla-cai.ic0.app/openapi.html", null, null);
+        navContent #= HTML.create_A("Conformance", "/conformance", null, null);
+        navContent #= HTML.create_A("Items", "/collections/" # collectionID # "/items", null, null);
+    
+        navContent #= HTML.create_A("JSON", "/collections/" # collectionID # "?f=JSON", null, ?"JSON");
         // - - Header
         headerContent #= HTML.create_Nav(navContent,null,null);
         headerContent #= HTML.create_H1("Data Page for Feature Collection", null, null);

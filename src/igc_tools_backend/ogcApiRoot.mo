@@ -57,23 +57,6 @@ module {
     };
 
     // JSON Representation
-    // Sample Response
-    // {
-    //   "title": "Buildings in Bonn",
-    //   "description": "Access to data about buildings in the city of Bonn via a Web API that conforms to the OGC API Features specification.",
-    //   "links": [
-    //     { "href": "http://data.example.org/",
-    //       "rel": "self", "type": "application/json", "title": "this document" },
-    //     { "href": "http://data.example.org/api",
-    //       "rel": "service-desc", "type": "application/vnd.oai.openapi+json;version=3.0", "title": "the API definition" },
-    //     { "href": "http://data.example.org/api.html",
-    //       "rel": "service-doc", "type": "text/html", "title": "the API documentation" },
-    //     { "href": "http://data.example.org/conformance",
-    //       "rel": "conformance", "type": "application/json", "title": "OGC API conformance classes implemented by this server" },
-    //     { "href": "http://data.example.org/collections",
-    //       "rel": "data", "type": "application/json", "title": "Information about the feature collections" }
-    //   ]
-    // }
     private func getRootJSON (map: TM.TrackMap, baseURL: Text) : Text {
         // Open
         var body : Text = "{" # JH.lb();
@@ -91,17 +74,19 @@ module {
         body #=","#JH.lb();
         body #=JH.linkJSON("conformance", "application/json",  "Conformance as JSON", baseURL#"/conformance?f=json");
         body #=","#JH.lb();
-        body #=JH.linkJSON("conformance", "text/html",  "Conformance as HTML", baseURL#"/conformance?f=html");
+        body #=JH.linkJSON("conformance", "text/html",  "Conformance as HTML", baseURL#"/conformancef=?html");
         body #=","#JH.lb();
-        body #=JH.linkJSON("service-desc", "application/vnd.oai.openapi+json;version=3.0", "The OpenAPI definition as JSON", "/api?f=json");
+        //body #=JH.linkJSON("service-desc", "application/vnd.oai.openapi+json;version=3.0", "The OpenAPI definition as JSON", "https://m2ifq-raaaa-aaaah-abtla-cai.ic0.app/openapi.json");
+        body #=JH.linkJSON("service-desc", "application/vnd.oai.openapi+json;version=3.0", "The OpenAPI definition as JSON", "http://127.0.0.1:4943/openapi.json?canisterId=r7inp-6aaaa-aaaaa-aaabq-cai");
+        
         body #=","#JH.lb();
-        body #=JH.linkJSON("service-doc", "text/html", "The OpenAPI definition as HTML", "api?f=html");
+        body #=JH.linkJSON("service-doc", "text/html", "The OpenAPI definition as HTML", "https://m2ifq-raaaa-aaaah-abtla-cai.ic0.app/openapi.html");
         body #=","#JH.lb();
         // collections
         body #=JH.linkJSON("data", "application/json",  "Collections", baseURL#"/collections?f=json");
         body #= "]"#JH.lb();
         // collections
-        // A little bit double to the collections page
+        // Double!
         body #= ",\"apis\": [" # JH.lb();
         // // Loop all Tracks as single API Entriepoints
         let iterTracks : I.Iter<TR.Track> = map.tracks.vals();
@@ -111,8 +96,7 @@ module {
                 body #= ",";
             };
             body #= JH.lb();
-        });
-
+        }); 
         body #= "]" # JH.lb();
         // Close
         body #= "}";
@@ -136,7 +120,7 @@ module {
         var navContent : Text = "";
         navContent #= HTML.create_A("Landing", "/", null, ?"current");
         navContent #= HTML.create_A("Collections", "/collections", null, null);
-        navContent #= HTML.create_A("Service Description", "/api", null, null);
+        navContent #= HTML.create_A("Service Description", "https://m2ifq-raaaa-aaaah-abtla-cai.ic0.app/openapi.html", null, null);
         navContent #= HTML.create_A("Conformance", "/conformance", null, null);
     
         navContent #= HTML.create_A("JSON", "/?f=JSON", null, ?"JSON");
@@ -167,20 +151,20 @@ module {
         // TODO define the pages
         mainContent #= HTML.create_H2("API Description", null, null);
         mainContent #= HTML.create_H3(
-            HTML.create_A("API HTML", "/api", null, null),null,null);
-        mainContent #= HTML.create_Div("The documentation of the interfaces as html (currently not implemented)",null, null);
+            HTML.create_A("API HTML", "https://m2ifq-raaaa-aaaah-abtla-cai.ic0.app/openapi.html", null, null),null,null);
+        mainContent #= HTML.create_Div("The documentation of the interfaces as html",null, null);
         mainContent #= HTML.create_H3(
-            HTML.create_A("API JSON", "/api?f=JSON", null, null),null,null);
-        mainContent #= HTML.create_Div("The documentation of the interfaces as json - swagger file (currently not implemented)",null, null);
+            HTML.create_A("API JSON", "https://m2ifq-raaaa-aaaah-abtla-cai.ic0.app/openapi.json", null, null),null,null);
+        mainContent #= HTML.create_Div("The documentation of the interfaces as json file",null, null);
         // Link to the Conformance Page
         // TODO define the pages
         mainContent #= HTML.create_H2("Conformance Classes", null, null);
         mainContent #= HTML.create_H3(
-            HTML.create_A("Conformance HTML", "/conformance", null, null),null,null);
-        mainContent #= HTML.create_Div("The conformance classes according to OGC (currently not implemented)",null, null);
+            HTML.create_A("Conformance HTML", "/conformance?f=html", null, null),null,null);
+        mainContent #= HTML.create_Div("The conformance classes according to OGC",null, null);
         mainContent #= HTML.create_H3(
-            HTML.create_A("Conformance JSON", "/conformance?f=JSON", null, null),null,null);
-        mainContent #= HTML.create_Div("The conformance classes according to OGC as JSON (currently not implemented)",null, null);
+            HTML.create_A("Conformance JSON", "/conformance?f=json", null, null),null,null);
+        mainContent #= HTML.create_Div("The conformance classes according to OGC as JSON",null, null);
 
 
         // Footer

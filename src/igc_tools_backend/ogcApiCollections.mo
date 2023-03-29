@@ -18,45 +18,7 @@ module {
         return getCollectionsHTML(map,baseURL);
     };
 
-    
-// {
-//   "links": [
-//     { "href": "http://data.example.org/collections.json",
-//       "rel": "self", "type": "application/json", "title": "this document" },
-//     { "href": "http://data.example.org/collections.html",
-//       "rel": "alternate", "type": "text/html", "title": "this document as HTML" },
-//     { "href": "http://schemas.example.org/1.0/buildings.xsd",
-//       "rel": "describedBy", "type": "application/xml", "title": "GML application schema for Acme Corporation building data" },
-//     { "href": "http://download.example.org/buildings.gpkg",
-//       "rel": "enclosure", "type": "application/geopackage+sqlite3", "title": "Bulk download (GeoPackage)", "length": 472546 }
-//   ],
-//   "collections": [
-//     {
-//       "id": "buildings",
-//       "title": "Buildings",
-//       "description": "Buildings in the city of Bonn.",
-//       "extent": {
-//         "spatial": {
-//           "bbox": [ [ 7.01, 50.63, 7.22, 50.78 ] ]
-//         },
-//         "temporal": {
-//           "interval": [ [ "2010-02-15T12:34:56Z", null ] ]
-//         }
-//       },
-//       "links": [
-//         { "href": "http://data.example.org/collections/buildings/items",
-//           "rel": "items", "type": "application/geo+json",
-//           "title": "Buildings" },
-//         { "href": "https://creativecommons.org/publicdomain/zero/1.0/",
-//           "rel": "license", "type": "text/html",
-//           "title": "CC0-1.0" },
-//         { "href": "https://creativecommons.org/publicdomain/zero/1.0/rdf",
-//           "rel": "license", "type": "application/rdf+xml",
-//           "title": "CC0-1.0" }
-//       ]
-//     }
-//   ]
-// }   
+
     private func getCollectionsJSON (map: TM.TrackMap, baseURL: Text) : Text {
         // Open
         var body : Text = "{" # JH.lb();
@@ -110,9 +72,12 @@ module {
         var headerContent :Text = "";
         // - - - Nav
         var navContent : Text = "";
-        navContent #= HTML.create_A("JSON", "/?f=JSON", null, null);
-        navContent #= HTML.create_A("Home", "/", null, null);
+        navContent #= HTML.create_A("Landing", "/", null, null);
         navContent #= HTML.create_A("Collections", "/collections", null, ?"current");
+        navContent #= HTML.create_A("Service Description", "https://m2ifq-raaaa-aaaah-abtla-cai.ic0.app/openapi.html", null, null);
+        navContent #= HTML.create_A("Conformance", "/conformance", null, null);
+    
+        navContent #= HTML.create_A("JSON", "/collections?f=JSON", null, ?"JSON");
         // - - Header
         headerContent #= HTML.create_Nav(navContent,null,null);
         headerContent #= HTML.create_H1("API Collection Page", null, null);
@@ -186,7 +151,7 @@ module {
         text #= JH.lb();
         text #= "} ," # JH.lb();
         text #= "\"links\": [" # JH.lb();
-        text #=JH.linkJSON("items", "application/json", "This document as JSON",currentURL # "?f=json");
+        text #=JH.linkJSON("self", "application/json", "This document as JSON",currentURL # "?f=json");
         text #=","#JH.lb();
         text #=JH.linkJSON("alternate", "text/html", "This document as HTML", currentURL#"?f=html");
         text #=","#JH.lb();

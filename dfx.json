@@ -10,7 +10,7 @@
         "igc_tools_backend"
       ],
       "frontend": {
-        "entrypoint": "src/igc_tools_frontend/src/index.html"
+        "entrypoint": "src/igc_tools_frontend/assets/index.html"
       },
       "source": [
         "src/igc_tools_frontend/assets",
@@ -18,9 +18,9 @@
       ],
       "type": "assets"
     },
-    "igc_tools_feature": {
-      "main": "src/igc_tools_feature/main.mo",
-      "type": "motoko"
+    "static" : {
+      "type": "assets",
+      "source": ["src/igc_tools_frontend/assets"]
     }
   },
   "defaults": {

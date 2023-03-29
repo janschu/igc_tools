@@ -29,17 +29,7 @@
         "description": "The landing page describes the service at all and links to relevant paths.",
         "parameters": [
           {
-            "name": "f",
-            "in": "query",
-            "description": "Select the output format of the response. If no value is provided, the standard HTTP rules apply, i.e., the accept header will be used to determine the format.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "json",
-                "html"
-              ]
-            }
+            "$ref": "#/components/parameters/format"
           }
         ],
         "responses": {
@@ -48,45 +38,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "links": {
-                      "type": "array",
-                      "items": {
-                        "required": [
-                          "href"
-                        ],
-                        "type": "object",
-                        "properties": {
-                          "href": {
-                            "type": "string",
-                            "format": "uri-reference"
-                          },
-                          "rel": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string"
-                          },
-                          "title": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/LandingPage"
                 }
               },
               "text/html": {
                 "schema": {
-                  "type": "string",
-                  "example": "<html>...</html>"
+                  "$ref": "#/components/schemas/htmlSchema"
                 }
               }
             }
@@ -106,6 +63,22 @@
         }
       }
     },
+    "/conformance": {
+      "get": {
+        "tags": [
+          "according conformance classes"
+        ],
+        "summary": "conformance",
+        "responses": {
+          "200": {
+            "description": "The conformance classes"
+          },
+          "default": {
+            "description": "Some errors"
+          }
+        }
+      }
+    },
     "/collections": {
       "get": {
         "tags": [
@@ -115,17 +88,7 @@
         "description": "List all available FeatureCollections - here all flights as PointCollections and one overview Collection",
         "parameters": [
           {
-            "name": "f",
-            "in": "query",
-            "description": "Select the output format of the response. If no value is provided, the standard HTTP rules apply, i.e., the accept header will be used to determine the format.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "json",
-                "html"
-              ]
-            }
+            "$ref": "#/components/parameters/format"
           }
         ],
         "responses": {
@@ -134,122 +97,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "links": {
-                      "type": "array",
-                      "items": {
-                        "required": [
-                          "href"
-                        ],
-                        "type": "object",
-                        "properties": {
-                          "href": {
-                            "type": "string",
-                            "format": "uri-reference"
-                          },
-                          "rel": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string"
-                          },
-                          "title": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    },
-                    "collections": {
-                      "type": "array",
-                      "items": {
-                        "required": [
-                          "id"
-                        ],
-                        "type": "object",
-                        "properties": {
-                          "title": {
-                            "type": "string"
-                          },
-                          "description": {
-                            "type": "string"
-                          },
-                          "id": {
-                            "type": "string"
-                          },
-                          "keywords": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "isDataset": {
-                            "type": "boolean"
-                          },
-                          "type": {
-                            "type": "string"
-                          },
-                          "extent": {
-                            "type": "object",
-                            "properties": {
-                              "spatial": {
-                                "type": "object",
-                                "properties": {
-                                  "bbox": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "number"
-                                    }
-                                  }
-                                }
-                              },
-                              "temporal": {
-                                "type": "object",
-                                "properties": {
-                                  "interval": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "string"
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "links": {
-                            "type": "array",
-                            "items": {
-                              "required": [
-                                "href"
-                              ],
-                              "type": "object",
-                              "properties": {
-                                "href": {
-                                  "type": "string",
-                                  "format": "uri-reference"
-                                },
-                                "rel": {
-                                  "type": "string"
-                                },
-                                "type": {
-                                  "type": "string"
-                                },
-                                "title": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/Collections"
                 }
               },
               "text/html": {
                 "schema": {
-                  "type": "string",
-                  "example": "<html>...</html>"
+                  "$ref": "#/components/schemas/htmlSchema"
                 }
               }
             }
@@ -278,17 +131,7 @@
         "description": "A FeatureCollection (Geometry LineString) containing all flights",
         "parameters": [
           {
-            "name": "f",
-            "in": "query",
-            "description": "Select the output format of the response. If no value is provided, the standard HTTP rules apply, i.e., the accept header will be used to determine the format.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "json",
-                "html"
-              ]
-            }
+            "$ref": "#/components/parameters/format"
           }
         ],
         "responses": {
@@ -297,87 +140,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "keywords": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "isDataset": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string"
-                    },
-                    "extent": {
-                      "type": "object",
-                      "properties": {
-                        "spatial": {
-                          "type": "object",
-                          "properties": {
-                            "bbox": {
-                              "type": "array",
-                              "items": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        },
-                        "temporal": {
-                          "type": "object",
-                          "properties": {
-                            "interval": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "links": {
-                      "type": "array",
-                      "items": {
-                        "required": [
-                          "href"
-                        ],
-                        "type": "object",
-                        "properties": {
-                          "href": {
-                            "type": "string",
-                            "format": "uri-reference"
-                          },
-                          "rel": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string"
-                          },
-                          "title": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/Collection"
                 }
               },
               "text/html": {
                 "schema": {
-                  "type": "string",
-                  "example": "<html>...</html>"
+                  "$ref": "#/components/schemas/htmlSchema"
                 }
               }
             }
@@ -406,17 +174,7 @@
         "description": "The FeatureCollection containing all Flights as GeoJSON Feature Collection",
         "parameters": [
           {
-            "name": "f",
-            "in": "query",
-            "description": "Select the output format of the response. If no value is provided, the standard HTTP rules apply, i.e., the accept header will be used to determine the format.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "json",
-                "html"
-              ]
-            }
+            "$ref": "#/components/parameters/format"
           }
         ],
         "responses": {
@@ -425,90 +183,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "features": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "type": "string"
-                          },
-                          "properties": {
-                            "type": "object",
-                            "properties": {
-                              "FRFWFIRMWAREVERSION": {
-                                "type": "string"
-                              },
-                              "FDTMGPSDATUM": {
-                                "type": "string"
-                              },
-                              "FGPSRECEIVER": {
-                                "type": "string"
-                              },
-                              "FCCLCOMPETITIONCLASS": {
-                                "type": "string"
-                              },
-                              "FGTYGLIDERTYPE": {
-                                "type": "string"
-                              },
-                              "FPLTPILOTINCHARGE": {
-                                "type": "string"
-                              },
-                              "FFTYFRTYPE": {
-                                "type": "string"
-                              },
-                              "FDTEDATE": {
-                                "type": "string"
-                              },
-                              "FRHWHARDWAREVERSION": {
-                                "type": "string"
-                              },
-                              "FPRSPRESSALTSENSOR": {
-                                "type": "string"
-                              },
-                              "UnitId": {
-                                "type": "string"
-                              },
-                              "FCIDCOMPETITIONID": {
-                                "type": "string"
-                              },
-                              "FGIDGLIDERID": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "geometry": {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string"
-                              },
-                              "coordinates": {
-                                "type": "array",
-                                "items": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "number"
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/CollectionFCItems"
                 }
               },
               "text/html": {
                 "schema": {
-                  "type": "string",
-                  "example": "<html>...</html>"
+                  "$ref": "#/components/schemas/htmlSchema"
                 }
               }
             }
@@ -536,26 +216,10 @@
         "summary": "Retrieve one feature (one flight track) from the flights collection by its Id",
         "parameters": [
           {
-            "name": "featureId",
-            "description": "the featureId in the collection",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/featureId"
           },
           {
-            "name": "f",
-            "in": "query",
-            "description": "Select the output format of the response. If no value is provided, the standard HTTP rules apply, i.e., the accept header will be used to determine the format.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "json",
-                "html"
-              ]
-            }
+            "$ref": "#/components/parameters/format"
           }
         ],
         "responses": {
@@ -564,79 +228,12 @@
             "content": {
               "application/geo+json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "properties": {
-                      "type": "object",
-                      "properties": {
-                        "FRFWFIRMWAREVERSION": {
-                          "type": "string"
-                        },
-                        "FDTMGPSDATUM": {
-                          "type": "string"
-                        },
-                        "FGPSRECEIVER": {
-                          "type": "string"
-                        },
-                        "FCCLCOMPETITIONCLASS": {
-                          "type": "string"
-                        },
-                        "FGTYGLIDERTYPE": {
-                          "type": "string"
-                        },
-                        "FPLTPILOTINCHARGE": {
-                          "type": "string"
-                        },
-                        "FFTYFRTYPE": {
-                          "type": "string"
-                        },
-                        "FDTEDATE": {
-                          "type": "string"
-                        },
-                        "FRHWHARDWAREVERSION": {
-                          "type": "string"
-                        },
-                        "FPRSPRESSALTSENSOR": {
-                          "type": "string"
-                        },
-                        "UnitId": {
-                          "type": "string"
-                        },
-                        "FCIDCOMPETITIONID": {
-                          "type": "string"
-                        },
-                        "FGIDGLIDERID": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "geometry": {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string"
-                        },
-                        "coordinates": {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "number"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/CollectionFCItem"
                 }
               },
               "text/html": {
                 "schema": {
-                  "type": "string",
-                  "example": "<html>...</html>"
+                  "$ref": "#/components/schemas/htmlSchema"
                 }
               }
             }
@@ -659,7 +256,7 @@
         }
       }
     },
-    "/collections/{CollectionId}": {
+    "/collections/{collectionId}": {
       "get": {
         "tags": [
           "Collection Description"
@@ -668,26 +265,10 @@
         "description": "A FeatureCollection (Geometry Point) with all GNSS measures of a track",
         "parameters": [
           {
-            "name": "f",
-            "in": "query",
-            "description": "Select the output format of the response. If no value is provided, the standard HTTP rules apply, i.e., the accept header will be used to determine the format.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "json",
-                "html"
-              ]
-            }
+            "$ref": "#/components/parameters/format"
           },
           {
-            "name": "collectionId",
-            "description": "the Id of the collection",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/collectionId"
           }
         ],
         "responses": {
@@ -696,87 +277,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "keywords": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "isDataset": {
-                      "type": "boolean"
-                    },
-                    "type": {
-                      "type": "string"
-                    },
-                    "extent": {
-                      "type": "object",
-                      "properties": {
-                        "spatial": {
-                          "type": "object",
-                          "properties": {
-                            "bbox": {
-                              "type": "array",
-                              "items": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        },
-                        "temporal": {
-                          "type": "object",
-                          "properties": {
-                            "interval": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "links": {
-                      "type": "array",
-                      "items": {
-                        "required": [
-                          "href"
-                        ],
-                        "type": "object",
-                        "properties": {
-                          "href": {
-                            "type": "string",
-                            "format": "uri-reference"
-                          },
-                          "rel": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string"
-                          },
-                          "title": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/Collection"
                 }
               },
               "text/html": {
                 "schema": {
-                  "type": "string",
-                  "example": "<html>...</html>"
+                  "$ref": "#/components/schemas/htmlSchema"
                 }
               }
             }
@@ -796,7 +302,7 @@
         }
       }
     },
-    "/collections/{CollectionId}/items": {
+    "/collections/{collectionId}/items": {
       "get": {
         "tags": [
           "Collection Items"
@@ -805,26 +311,10 @@
         "description": "The FeatureCollection containing all GNSS Trackpoints as a GeoJSON FeatureCollection",
         "parameters": [
           {
-            "name": "f",
-            "in": "query",
-            "description": "Select the output format of the response. If no value is provided, the standard HTTP rules apply, i.e., the accept header will be used to determine the format.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "json",
-                "html"
-              ]
-            }
+            "$ref": "#/components/parameters/format"
           },
           {
-            "name": "collectionId",
-            "description": "the Id of the collection",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/collectionId"
           }
         ],
         "responses": {
@@ -833,54 +323,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "features": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "type": "string"
-                          },
-                          "geometry": {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string"
-                              },
-                              "coordinates": {
-                                "type": "array",
-                                "items": {
-                                  "type": "number"
-                                }
-                              }
-                            }
-                          },
-                          "properties": {
-                            "type": "object",
-                            "properties": {
-                              "timestamp": {
-                                "type": "number"
-                              },
-                              "gpsheight": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/CollectionFlightItems"
                 }
               },
               "text/html": {
                 "schema": {
-                  "type": "string",
-                  "example": "<html>...</html>"
+                  "$ref": "#/components/schemas/htmlSchema"
                 }
               }
             }
@@ -900,7 +348,7 @@
         }
       }
     },
-    "/collections/{CollectionId}/items/{featureId}": {
+    "/collections/{collectionId}/items/{featureId}": {
       "get": {
         "tags": [
           "Single Item Access"
@@ -908,35 +356,13 @@
         "summary": "Retrieve one feature (one GNNS Point with height and timestamp) from the flight collection by its Id",
         "parameters": [
           {
-            "name": "collectionId",
-            "description": "the Id of the collection",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/collectionId"
           },
           {
-            "name": "featureId",
-            "description": "the featureId in the collection",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
+            "$ref": "#/components/parameters/featureId"
           },
           {
-            "name": "f",
-            "in": "query",
-            "description": "Select the output format of the response. If no value is provided, the standard HTTP rules apply, i.e., the accept header will be used to determine the format.",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "json",
-                "html"
-              ]
-            }
+            "$ref": "#/components/parameters/format"
           }
         ],
         "responses": {
@@ -945,43 +371,12 @@
             "content": {
               "application/geo+json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "geometry": {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string"
-                        },
-                        "coordinates": {
-                          "type": "array",
-                          "items": {
-                            "type": "number"
-                          }
-                        }
-                      }
-                    },
-                    "properties": {
-                      "type": "object",
-                      "properties": {
-                        "timestamp": {
-                          "type": "number"
-                        },
-                        "gpsheight": {
-                          "type": "number"
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/CollectionFlightItem"
                 }
               },
               "text/html": {
                 "schema": {
-                  "type": "string",
-                  "example": "<html>...</html>"
+                  "$ref": "#/components/schemas/htmlSchema"
                 }
               }
             }
@@ -1473,37 +868,7 @@
           "features": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string"
-                },
-                "geometry": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "coordinates": {
-                      "type": "array",
-                      "items": {
-                        "type": "number"
-                      }
-                    }
-                  }
-                },
-                "properties": {
-                  "type": "object",
-                  "properties": {
-                    "timestamp": {
-                      "type": "number"
-                    },
-                    "gpsheight": {
-                      "type": "number"
-                    }
-                  }
-                }
-              }
+              "$ref": "#/components/schemas/CollectionFlightItem"
             }
           }
         }
